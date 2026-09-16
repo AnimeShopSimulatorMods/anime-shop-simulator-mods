@@ -120,6 +120,12 @@ found out again:
 Bug reports and pull requests are welcome. When reporting a bug, attach `MelonLoader\Latest.log` and say
 which game version you are on a game update is the most common reason a mod stops working.
 
+## Support Me
+
+<img width="200" height="200" alt="bmc_qr" src="https://github.com/user-attachments/assets/4034910a-9019-498d-a3e7-85d96b789e5e" />
+
+[Buy Me a Cofee](buymeacoffee.com/tongtongkok)
+
 ## License
 
 [MIT](LICENSE). Anime Shop Simulator and its assets belong to their respective owners; this repository
