@@ -1,6 +1,6 @@
 # Anime Shop Simulator Mods
 
-**MelonLoader mods for Anime Shop Simulator** — smarter employee restocking, employees who keep working
+**MelonLoader mods for Anime Shop Simulator** smarter employee restocking, employees who keep working
 after closing time, and a full in-game cheat and debug menu. Open source, written in C# for the game's
 Unity IL2CPP build.
 
@@ -37,30 +37,30 @@ choice, so they crowd together.
 
 This mod changes the choice, not the employee:
 
-- **Empty shelves first** — a shelf slot with nothing on it always wins over one that still has stock,
+- **Empty shelves first** a shelf slot with nothing on it always wins over one that still has stock,
   including shelves that have never been stocked at all.
-- **Then the emptiest** — among the rest, the lowest stock ratio wins, with distance breaking ties.
-- **No crowding** — each employee claims its target, so two of them never head for the same slot.
-- **Slots keep their product** — an emptied slot is refilled with what it held, not a random box.
-- **Stuck watchdog** — an employee standing still mid-task is nudged, then released from the task.
-- **Balanced storage** — storage employees put boxes on the rack with the fewest boxes.
+- **Then the emptiest** among the rest, the lowest stock ratio wins, with distance breaking ties.
+- **No crowding** each employee claims its target, so two of them never head for the same slot.
+- **Slots keep their product** an emptied slot is refilled with what it held, not a random box.
+- **Stuck watchdog** an employee standing still mid-task is nudged, then released from the task.
+- **Balanced storage** storage employees put boxes on the rack with the fewest boxes.
 
 ## Cheat for Dev
 
 A developer menu, but useful to anyone who wants to skip the grind or set up a specific situation.
 
-- **Money** — set it, or turn on infinite money. Crystals, experience, level, day and wins too.
-- **Staff** — edit any employee's level and tier, promote, boost, clear debt, hire.
-- **Time** — pause, jump to any hour within shop hours, speed up to 20x, end the day.
-- **Shelves** — delete stock, or send it back to the delivery point as boxes. Pick from a list or just look at a shelf.
-- **Orders** — spawn any box, up to 200 at a time, free.
-- **Testing** — turn customers off, spawn a thief or any other customer type, clean the shop, teleport.
-- **Unlocks** — every licence, store and storage upgrades.
+- **Money** set it, or turn on infinite money. Crystals, experience, level, day and wins too.
+- **Staff** edit any employee's level and tier, promote, boost, clear debt, hire.
+- **Time** pause, jump to any hour within shop hours, speed up to 20x, end the day.
+- **Shelves** delete stock, or send it back to the delivery point as boxes. Pick from a list or just look at a shelf.
+- **Orders** spawn any box, up to 200 at a time, free.
+- **Testing** turn customers off, spawn a thief or any other customer type, clean the shop, teleport.
+- **Unlocks** every licence, store and storage upgrades.
 
 ## Building from source
 
 Requirements: the .NET SDK, and Anime Shop Simulator with MelonLoader installed and launched once
-(the build references the assemblies MelonLoader generates from your copy of the game — nothing from the
+(the build references the assemblies MelonLoader generates from your copy of the game nothing from the
 game is stored in this repository).
 
 ```bash
@@ -118,7 +118,7 @@ found out again:
 ## Contributing
 
 Bug reports and pull requests are welcome. When reporting a bug, attach `MelonLoader\Latest.log` and say
-which game version you are on — a game update is the most common reason a mod stops working.
+which game version you are on a game update is the most common reason a mod stops working.
 
 ## License
 
