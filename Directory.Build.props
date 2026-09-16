@@ -1,0 +1,43 @@
+<Project>
+  <!-- Shared settings for every mod project in this folder. -->
+
+  <!-- Machine-specific overrides, such as a different GamePath. Not committed: copy the example below
+       into Directory.Build.local.props next to this file.
+       <Project><PropertyGroup><GamePath>D:\Games\Anime Shop Simulator</GamePath></PropertyGroup></Project> -->
+  <Import Project="Directory.Build.local.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+
+  <PropertyGroup>
+    <GamePath Condition="'$(GamePath)' == ''">E:\SteamLibrary\steamapps\common\Anime Shop Simulator</GamePath>
+    <MelonLoaderPath>$(GamePath)\MelonLoader</MelonLoaderPath>
+    <Il2CppAssembliesPath>$(MelonLoaderPath)\Il2CppAssemblies</Il2CppAssembliesPath>
+
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony" HintPath="$(MelonLoaderPath)\net6\0Harmony.dll" Private="false" />
+    <Reference Include="MelonLoader" HintPath="$(MelonLoaderPath)\net35\MelonLoader.dll" Private="false" />
+    <Reference Include="Il2CppInterop.Runtime" HintPath="$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(Il2CppAssembliesPath)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="Il2CppFishNet.Runtime" HintPath="$(Il2CppAssembliesPath)\Il2CppFishNet.Runtime.dll" Private="false" />
+    <Reference Include="Il2Cppmscorlib" HintPath="$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll" Private="false" />
+    <Reference Include="Il2CppProject" HintPath="$(Il2CppAssembliesPath)\Il2CppProject.dll" Private="false" />
+    <Reference Include="Il2CppUniTask" HintPath="$(Il2CppAssembliesPath)\Il2CppUniTask.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(Il2CppAssembliesPath)\UnityEngine.InputLegacyModule.dll" Private="false" />
+    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(Il2CppAssembliesPath)\UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="UnityEngine.PhysicsModule" HintPath="$(Il2CppAssembliesPath)\UnityEngine.PhysicsModule.dll" Private="false" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(Il2CppAssembliesPath)\UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="UnityEngine.InputModule" HintPath="$(Il2CppAssembliesPath)\UnityEngine.InputModule.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Publish\**" />
+  </ItemGroup>
+</Project>

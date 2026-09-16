@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>EmployeeOvertime</AssemblyName>
+    <RootNamespace>EmployeeOvertime</RootNamespace>
+  </PropertyGroup>
+</Project>

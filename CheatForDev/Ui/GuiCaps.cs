@@ -1,0 +1,127 @@
+using System;
+using System.Collections.Generic;
+using MelonLoader;
+using UnityEngine;
+
+namespace CheatForDev.Ui
+{
+    // The game ships with most of IMGUI stripped, and Il2CppInterop can only rebuild part of it: calling
+    // a missing control throws NotSupportedException("Method unstripping failed") every single frame.
+    // So the menu asks first. Each control is called once inside a real OnGUI pass, off-screen, and the
+    // menu is then built only from what answered. Re-run this after a game update; the log line says
+    // exactly what changed.
+    internal static class GuiCaps
+    {
+        private static readonly Rect Scratch = new Rect(-4000f, -4000f, 300f, 400f);
+
+        public static bool Surveyed { get; private set; }
+
+        private static bool _logged;
+
+        public static bool Box { get; private set; }
+        public static bool SkinBox { get; private set; }
+        public static bool Label { get; private set; }
+        public static bool Button { get; private set; }
+        public static bool TextField { get; private set; }
+        public static bool Toggle { get; private set; }
+        public static bool Toolbar { get; private set; }
+        public static bool Slider { get; private set; }
+        public static bool Space { get; private set; }
+        public static bool Width { get; private set; }
+        public static bool Horizontal { get; private set; }
+        public static bool Vertical { get; private set; }
+        public static bool ScrollView { get; private set; }
+        public static bool Events { get; private set; }
+
+        public static void Reset()
+        {
+            Surveyed = false;
+            _logged = false;
+        }
+
+        // Called once per event pass of a single frame. The checks are repeated on each pass on purpose:
+        // IMGUI matches controls between the layout and repaint passes and throws if they differ.
+        public static void Survey()
+        {
+            Surveyed = true;
+
+            var report = new List<string>();
+
+            Box = Check(report, "GUI.Box", () => GUI.Box(Scratch, "x"));
+            Events = Check(report, "Event.current", () => { var _ = Event.current.type; });
+            SkinBox = Check(report, "GUI.skin.box", () => { var _ = GUI.skin.box; });
+
+            Label = CheckLayout(report, "GUILayout.Label", () => GUILayout.Label("x"));
+            Button = CheckLayout(report, "GUILayout.Button", () => GUILayout.Button("x"));
+            TextField = CheckLayout(report, "GUILayout.TextField", () => GUILayout.TextField("x"));
+            Toggle = CheckLayout(report, "GUILayout.Toggle", () => GUILayout.Toggle(false, "x"));
+            Toolbar = CheckLayout(report, "GUILayout.Toolbar", () => GUILayout.Toolbar(0, new[] { "a", "b" }));
+            Slider = CheckLayout(report, "GUILayout.HorizontalSlider", () => GUILayout.HorizontalSlider(0.5f, 0f, 1f));
+            Space = CheckLayout(report, "GUILayout.Space", () => GUILayout.Space(4f));
+            Width = CheckLayout(report, "GUILayout.Width", () => GUILayout.Label("x", GUILayout.Width(50f)));
+            Horizontal = CheckLayout(report, "GUILayout.BeginHorizontal", () =>
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.EndHorizontal();
+            });
+            Vertical = CheckLayout(report, "GUILayout.BeginVertical", () =>
+            {
+                GUILayout.BeginVertical();
+                GUILayout.EndVertical();
+            });
+            ScrollView = CheckLayout(report, "GUILayout.BeginScrollView", () =>
+            {
+                GUILayout.BeginScrollView(Vector2.zero);
+                GUILayout.EndScrollView();
+            });
+
+            if (_logged) return;
+            _logged = true;
+
+            MelonLogger.Msg("===== [CheatForDev] IMGUI survey =====");
+            foreach (var line in report) MelonLogger.Msg("  " + line);
+            MelonLogger.Msg("===== [CheatForDev] IMGUI survey end =====");
+        }
+
+        private static bool Check(List<string> report, string label, Action call)
+        {
+            try
+            {
+                call();
+                report.Add($"OK    {label}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                report.Add($"FAIL  {label} -> {ex.GetType().Name}");
+                return false;
+            }
+        }
+
+        private static bool CheckLayout(List<string> report, string label, Action call)
+        {
+            bool areaOpen = false;
+            try
+            {
+                GUILayout.BeginArea(Scratch);
+                areaOpen = true;
+                call();
+                report.Add($"OK    {label}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                report.Add($"FAIL  {label} -> {ex.GetType().Name}");
+                return false;
+            }
+            finally
+            {
+                if (areaOpen)
+                {
+                    try { GUILayout.EndArea(); }
+                    catch { /* the failure already unwound the area */ }
+                }
+            }
+        }
+    }
+}

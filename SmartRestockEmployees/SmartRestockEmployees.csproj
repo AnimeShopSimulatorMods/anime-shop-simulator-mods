@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SmartRestockEmployees</AssemblyName>
+    <RootNamespace>SmartRestockEmployees</RootNamespace>
+  </PropertyGroup>
+</Project>

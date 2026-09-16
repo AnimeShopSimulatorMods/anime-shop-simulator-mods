@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.DotSettings.user
+
+# Packaged releases go to GitHub Releases and Nexus Mods, not into history
+**/Publish/out/
+
+# Local build overrides (for example a different GamePath)
+Directory.Build.local.props
+
+# Never commit anything taken from the game itself
+**/Il2CppAssemblies/
+**/cpp2il_out/
+*.dump
