@@ -5,7 +5,7 @@ after closing time, and a full in-game cheat and debug menu. Open source, writte
 Unity IL2CPP build.
 
 [![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.x-ff5c8a)](https://github.com/LavaGang/MelonLoader)
-[![Game version](https://img.shields.io/badge/Anime%20Shop%20Simulator-1.0.4-7c5cff)](https://store.steampowered.com/search/?term=Anime+Shop+Simulator)
+[![Game version](https://img.shields.io/badge/Anime%20Shop%20Simulator-1.0.5-7c5cff)](https://store.steampowered.com/search/?term=Anime+Shop+Simulator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > Unofficial fan project. Not affiliated with or endorsed by OneMoreTime, the developers of Anime Shop Simulator.
