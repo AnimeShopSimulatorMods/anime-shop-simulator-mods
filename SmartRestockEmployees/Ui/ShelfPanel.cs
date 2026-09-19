@@ -12,8 +12,17 @@ namespace SmartRestockEmployees.Ui
     // every shelf in the store. No engine vocabulary reaches the screen -- no slots, no definition
     // ids, no GameObject names.
     //
-    // No GUILayout.Window: it needs a GUI.WindowFunction delegate and Il2Cpp marshalling of those is
-    // unreliable. A plain area inside a box gives the same panel.
+    // Two rules this file exists to obey, both IMGUI's:
+    //
+    //   1. A frame runs Layout -> input event -> Repaint, and the set of controls must be identical
+    //      in all three or Unity throws "Mismatched LayoutGroup". So nothing that changes the shape
+    //      of the panel may happen while drawing: buttons queue their work with Queue() and it runs
+    //      at the start of the next Layout pass. The same goes for anything the shape is read from --
+    //      the crosshair raycast, the shelf list, whether this is the host -- which is why Snapshot()
+    //      samples them once per frame rather than per pass.
+    //
+    //   2. No GUILayout.Window: it needs a GUI.WindowFunction delegate and Il2Cpp marshalling of
+    //      those is unreliable. A plain area inside a box gives the same panel.
     internal static class ShelfPanel
     {
         private const float PanelWidth = 420f;
@@ -22,29 +31,40 @@ namespace SmartRestockEmployees.Ui
         private static Vector2 _scroll;
         private static bool _listView;
 
-        private static List<ShelfFinder.ShelfEntry> _shelves;
-        private static float _nextScan;
-
         // The shelf the player picked out of the list. Null means "whatever I am looking at".
         private static ShelfProducts _pinned;
 
-        private static ShelfProducts _pending;
+        private static ShelfProducts _pendingShelf;
         private static bool _pendingSecondZone;
         private static int _pendingItems;
         private static string _status;
 
+        private static Action _queued;
+
+        // Everything the layout is built from, sampled once per frame at the Layout pass.
+        private static ShelfFinder.ShelfEntry _shelf;
+        private static List<ShelfFinder.ShelfEntry> _shelves;
+        private static float _nextScan;
+        private static bool _isServer;
+        private static bool _hasSecondZone;
+
         public static void Reset()
         {
+            _shelf = null;
             _shelves = null;
             _nextScan = 0f;
             _pinned = null;
-            _pending = null;
+            _pendingShelf = null;
             _status = null;
+            _queued = null;
             _scroll = Vector2.zero;
         }
 
         public static void Draw()
         {
+            var e = Event.current;
+            if (e == null || e.type == EventType.Layout) Snapshot();
+
             if (!Skin.Ready)
             {
                 DrawFallback();
@@ -56,7 +76,7 @@ namespace SmartRestockEmployees.Ui
             {
                 Header();
 
-                if (_pending != null) Confirmation();
+                if (_pendingShelf != null) Confirmation();
                 else if (_listView) ListView();
                 else AimView();
 
@@ -72,32 +92,72 @@ namespace SmartRestockEmployees.Ui
             }
         }
 
+        // Runs only at the Layout pass, so every pass of the frame sees the same panel.
+        private static void Snapshot()
+        {
+            var work = _queued;
+            _queued = null;
+            if (work != null)
+            {
+                try
+                {
+                    work();
+                }
+                catch (Exception ex)
+                {
+                    MelonLogger.Error($"[ShelfPanel] Action failed: {ex}");
+                }
+            }
+
+            try
+            {
+                _isServer = GameLinks.IsServer;
+                _hasSecondZone = DeliveryReturn.HasSecondZone(GameLinks.Orders);
+
+                var shelf = _pinned != null ? _pinned : ShelfFinder.UnderCrosshair();
+                _shelf = shelf == null ? null : ShelfFinder.Describe(shelf, GameLinks.Products);
+
+                if (_listView && (_shelves == null || Time.realtimeSinceStartup > _nextScan))
+                {
+                    _shelves = ShelfFinder.Scan(GameLinks.Products);
+                    _nextScan = Time.realtimeSinceStartup + 2f;
+                }
+            }
+            catch (Exception ex)
+            {
+                MelonLogger.Error($"[ShelfPanel] Snapshot failed: {ex}");
+            }
+        }
+
+        private static void Queue(Action work)
+        {
+            _queued = work;
+        }
+
         private static void Header()
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label(_listView ? "All shelves" : "Shelf", Skin.Title);
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(_listView ? "Look instead" : "See all", Skin.Secondary, GUILayout.Width(112f)))
-            {
-                _listView = !_listView;
-                _pinned = null;
-                _status = null;
-            }
+                Queue(() =>
+                {
+                    _listView = !_listView;
+                    _pinned = null;
+                    _status = null;
+                    _shelves = null;
+                });
             GUILayout.EndHorizontal();
             GUILayout.Space(10f);
         }
 
         private static void AimView()
         {
-            var shelf = _pinned != null ? _pinned : ShelfFinder.UnderCrosshair();
-            if (shelf == null)
+            if (_shelf == null)
             {
                 GUILayout.Label("Walk up to a shelf and look at it.", Skin.Hint);
                 return;
             }
-
-            var entry = ShelfFinder.Describe(shelf, GameLinks.Products);
-            if (entry == null) return;
 
             // A shelf picked from the list stays put while the player reads the panel, and keeps
             // glowing so they can see which one it is.
@@ -107,25 +167,20 @@ namespace SmartRestockEmployees.Ui
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Picked from the list", Skin.Hint);
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button("Unpin", Skin.Secondary, GUILayout.Width(80f))) _pinned = null;
+                if (GUILayout.Button("Unpin", Skin.Secondary, GUILayout.Width(80f)))
+                    Queue(() => _pinned = null);
                 GUILayout.EndHorizontal();
                 GUILayout.Space(6f);
             }
 
-            ShelfCard(entry);
+            ShelfCard(_shelf);
             GUILayout.Space(12f);
-            Actions(entry);
+            Actions(_shelf);
         }
 
         private static void ListView()
         {
-            if (_shelves == null || Time.realtimeSinceStartup > _nextScan)
-            {
-                _shelves = ShelfFinder.Scan(GameLinks.Products);
-                _nextScan = Time.realtimeSinceStartup + 2f;
-            }
-
-            if (_shelves.Count == 0)
+            if (_shelves == null || _shelves.Count == 0)
             {
                 GUILayout.Label("No shelves in the store yet.", Skin.Hint);
                 return;
@@ -146,14 +201,19 @@ namespace SmartRestockEmployees.Ui
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Open", Skin.Secondary, GUILayout.Width(74f)))
                 {
-                    _pinned = entry.Shelf;
-                    _listView = false;
-                    _status = null;
+                    var picked = entry.Shelf;
+                    Queue(() =>
+                    {
+                        _pinned = picked;
+                        _listView = false;
+                        _status = null;
+                    });
                 }
                 GUILayout.EndHorizontal();
 
                 // Hovering a row lights up the real shelf. Shelves have no name a player would
-                // recognise, so this is how they tell one row from another.
+                // recognise, so this is how they tell one row from another. Repaint only: the rect is
+                // not known during Layout, and highlighting changes nothing about the panel's shape.
                 if (Event.current != null && Event.current.type == EventType.Repaint &&
                     GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
                     ShelfFinder.Highlight(entry.Shelf);
@@ -176,22 +236,20 @@ namespace SmartRestockEmployees.Ui
 
         private static void Actions(ShelfFinder.ShelfEntry entry)
         {
-            if (!GameLinks.IsServer)
+            if (!_isServer)
             {
                 GUILayout.Label("Only the host can change shelves.", Skin.Hint);
                 return;
             }
 
-            bool hasSecond = DeliveryReturn.HasSecondZone(GameLinks.Orders);
-
             GUILayout.Label("Empty this shelf", Skin.Hint);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Delivery 1", Skin.Primary)) Ask(entry, false);
             GUILayout.Space(8f);
-            if (GUILayout.Button("Delivery 2", hasSecond ? Skin.Primary : Skin.Secondary)) Ask(entry, true);
+            if (GUILayout.Button("Delivery 2", _hasSecondZone ? Skin.Primary : Skin.Secondary)) Ask(entry, true);
             GUILayout.EndHorizontal();
 
-            GUILayout.Label(hasSecond
+            GUILayout.Label(_hasSecondZone
                 ? "Items go back into boxes at the zone you pick, and employees stop refilling this shelf."
                 : "The second delivery zone is not open yet, so items will go to Delivery 1.", Skin.Hint);
 
@@ -204,53 +262,65 @@ namespace SmartRestockEmployees.Ui
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Forget", Skin.Secondary, GUILayout.Width(96f)))
             {
-                int cleared = ShelfMemory.Clear(entry.Shelf);
-                _status = cleared > 0
-                    ? "Employees will leave this shelf alone."
-                    : "This shelf was already forgotten.";
-                _shelves = null;
+                var shelf = entry.Shelf;
+                Queue(() =>
+                {
+                    int cleared = ShelfMemory.Clear(shelf);
+                    _status = cleared > 0
+                        ? "Employees will leave this shelf alone."
+                        : "This shelf was already forgotten.";
+                    _shelves = null;
+                });
             }
             GUILayout.EndHorizontal();
         }
 
         private static void Ask(ShelfFinder.ShelfEntry entry, bool secondZone)
         {
-            // Nothing to pack up, so there is nothing to confirm -- just do the part that matters.
-            if (entry.ItemCount == 0)
-            {
-                int cleared = ShelfMemory.Clear(entry.Shelf);
-                _status = cleared > 0
-                    ? "Nothing to pack up. Employees will leave this shelf alone."
-                    : "This shelf is already empty and forgotten.";
-                _shelves = null;
-                return;
-            }
+            var shelf = entry.Shelf;
+            int items = entry.ItemCount;
 
-            _pending = entry.Shelf;
-            _pendingSecondZone = secondZone;
-            _pendingItems = entry.ItemCount;
-            _status = null;
+            Queue(() =>
+            {
+                // Nothing to pack up, so there is nothing to confirm -- just do the part that matters.
+                if (items == 0)
+                {
+                    int cleared = ShelfMemory.Clear(shelf);
+                    _status = cleared > 0
+                        ? "Nothing to pack up. Employees will leave this shelf alone."
+                        : "This shelf is already empty and forgotten.";
+                    _shelves = null;
+                    return;
+                }
+
+                _pendingShelf = shelf;
+                _pendingSecondZone = secondZone;
+                _pendingItems = items;
+                _status = null;
+            });
         }
 
         private static void Confirmation()
         {
-            bool second = _pendingSecondZone && DeliveryReturn.HasSecondZone(GameLinks.Orders);
+            bool second = _pendingSecondZone && _hasSecondZone;
 
             GUILayout.Label("Empty this shelf?", Skin.Title);
             GUILayout.Label($"{_pendingItems} items go back into boxes at Delivery {(second ? 2 : 1)}.", Skin.Hint);
             GUILayout.Space(12f);
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Cancel", Skin.Secondary)) _pending = null;
+            if (GUILayout.Button("Cancel", Skin.Secondary)) Queue(() => _pendingShelf = null);
             GUILayout.Space(8f);
             if (GUILayout.Button("Empty it", Skin.Primary))
-            {
-                var result = DeliveryReturn.Run(_pending, GameLinks.Orders, GameLinks.Products, _pendingSecondZone);
-                ShelfMemory.Clear(_pending);
-                _status = Describe(result);
-                _pending = null;
-                _shelves = null;
-            }
+                Queue(() =>
+                {
+                    var result = DeliveryReturn.Run(_pendingShelf, GameLinks.Orders, GameLinks.Products,
+                        _pendingSecondZone);
+                    ShelfMemory.Clear(_pendingShelf);
+                    _status = Describe(result);
+                    _pendingShelf = null;
+                    _shelves = null;
+                });
             GUILayout.EndHorizontal();
         }
 
@@ -283,7 +353,7 @@ namespace SmartRestockEmployees.Ui
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(Main.FillFreeSlots ? "On" : "Off", Skin.Secondary, GUILayout.Width(68f)))
-                Main.SetFillFreeSlots(!Main.FillFreeSlots);
+                Queue(() => Main.SetFillFreeSlots(!Main.FillFreeSlots));
             GUILayout.EndHorizontal();
         }
 
@@ -304,31 +374,32 @@ namespace SmartRestockEmployees.Ui
             {
                 Controls.Header("Shelf");
 
-                var shelf = _pinned != null ? _pinned : ShelfFinder.UnderCrosshair();
-                if (shelf == null)
+                if (_shelf == null)
                 {
                     Controls.Label("Walk up to a shelf and look at it.");
                     return;
                 }
 
-                var entry = ShelfFinder.Describe(shelf, GameLinks.Products);
-                if (entry == null) return;
+                Controls.Label($"{_shelf.ProductName} - {_shelf.ItemCount} of {_shelf.MaxCount} items");
 
-                Controls.Label($"{entry.ProductName} - {entry.ItemCount} of {entry.MaxCount} items");
-
-                if (!GameLinks.IsServer)
+                if (!_isServer)
                 {
                     Controls.Label("Only the host can change shelves.");
                     return;
                 }
 
+                var entry = _shelf;
                 if (Controls.Button("Empty to Delivery 1", 190f)) Ask(entry, false);
                 if (Controls.Button("Empty to Delivery 2", 190f)) Ask(entry, true);
-                if (Controls.Button("Forget this shelf", 190f)) ShelfMemory.Clear(entry.Shelf);
+                if (Controls.Button("Forget this shelf", 190f))
+                {
+                    var shelf = entry.Shelf;
+                    Queue(() => ShelfMemory.Clear(shelf));
+                }
 
                 Controls.Label($"Use never-filled slots: {(Main.FillFreeSlots ? "on" : "off")}");
                 if (Controls.Button(Main.FillFreeSlots ? "Turn off" : "Turn on", 190f))
-                    Main.SetFillFreeSlots(!Main.FillFreeSlots);
+                    Queue(() => Main.SetFillFreeSlots(!Main.FillFreeSlots));
 
                 if (!string.IsNullOrEmpty(_status)) Controls.Label(_status);
             }
