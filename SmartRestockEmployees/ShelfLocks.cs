@@ -123,6 +123,17 @@ namespace SmartRestockEmployees
             return locked;
         }
 
+        // Releasing one slot, for when the player stocks it themselves and no longer wants it empty.
+        public static bool UnlockSlot(ProductPricePlace place)
+        {
+            var key = Key(place);
+            if (key == null || !Locked.Remove(key)) return false;
+
+            Save();
+            MelonLogger.Msg($"[ShelfLocks] Released one slot. {Locked.Count} total.");
+            return true;
+        }
+
         public static int Unlock(ShelfProducts shelf)
         {
             int freed = 0;
