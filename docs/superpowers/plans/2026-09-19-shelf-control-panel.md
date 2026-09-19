@@ -71,23 +71,12 @@ Smallest change, largest share of the two user requests, and it ships value with
 - Modify: `SmartRestockEmployees/SortingPatches.cs:368-383`
 - Modify: `SmartRestockEmployees/SortingPatches.cs:472-481`
 
-- [ ] **Step 1: Add the rule to SlotRules**
+- [x] **Step 1: ~~Add the rule to SlotRules~~ — dropped during execution**
 
-Append to the `SlotRules` class in `SmartRestockEmployees/SlotRules.cs`, after `IsEmpty`:
-
-```csharp
-        // A slot that has never held anything. The player may want it left alone so the shelf
-        // stays part of their layout instead of filling with whatever box is nearest.
-        public static bool IsFreeSlot(ProductPricePlace place)
-        {
-            return !HasProduct(GetSlotProductId(place));
-        }
-
-        public static bool AllowsFill(ProductPricePlace place)
-        {
-            return Main.FillFreeSlots || !IsFreeSlot(place);
-        }
-```
+The plan originally added `IsFreeSlot` and `AllowsFill` helpers here. Steps 3 and 4 then read
+`Main.FillFreeSlots` directly, because both call sites already hold the slot's product id and
+calling a helper would recompute it. That left the helpers dead, so they were not added. The rule
+has one definition either way: the preference itself.
 
 - [ ] **Step 2: Add the preference**
 

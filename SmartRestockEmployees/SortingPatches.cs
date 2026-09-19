@@ -12,6 +12,13 @@ using ShelfList = Il2CppSystem.Collections.Generic.List<Il2CppProject.Code.Gamep
 
 namespace SmartRestockEmployees
 {
+    // Scope of the forcing, learned the hard way on 1.0.5: this mod only ever forces a slot that
+    // already remembers a product. Bare slots are left to the game. The game decides those on
+    // physical fit, which is not visible from here -- the assemblies MelonLoader generates are
+    // interop stubs, and the Cpp2IL output carries signatures and RVAs but no method bodies, so the
+    // only readable facts about the game's search are its parameter lists. Forcing a decision this
+    // mod cannot check is what broke restocking entirely; see ResolveProductForSlot.
+    //
     // How the sorting employee picks work (read out of the game's native code, verified on 1.0.4):
     //   FindShelf -> IsControllerRoleActive -> CollectAvailableShelves -> CollectAvailablePickups
     //             -> GetConfiguredPlace -> (only if that returned null) TryFindEmptyPlacementCandidate
@@ -92,6 +99,8 @@ namespace SmartRestockEmployees
             Until.Remove(place);
             return false;
         }
+
+        public static int Count => Until.Count;
 
         public static void Reset() => Until.Clear();
     }
@@ -175,11 +184,14 @@ namespace SmartRestockEmployees
         public static void Prefix(EmployeeSortingController __instance)
         {
             SearchContext.Push(__instance.Pointer, SearchContext.SearchKind.FindShelf);
+            Diagnostics.Begin(Diagnostics.Name(__instance));
         }
 
         [HarmonyPostfix]
         public static void Postfix(EmployeeSortingController __instance)
         {
+            Diagnostics.End(__instance._pickup != null, __instance._productPricePlace);
+
             var context = SearchContext.Pop(__instance.Pointer, SearchContext.SearchKind.FindShelf);
             if (context == null || context.TargetPlace == IntPtr.Zero) return;
 
@@ -334,6 +346,19 @@ namespace SmartRestockEmployees
 
             if (best.Place == null)
             {
+                // The mod must never be the reason a store stops working. If every slot was filtered
+                // out while some were still backed off, drop the backoff now instead of leaving
+                // employees idle for the rest of its 30 seconds. Without this, one bad forcing
+                // decision compounds: each refusal removes another slot until nothing is left.
+                if (considered == 0 && TargetBlacklist.Count > 0)
+                {
+                    TargetBlacklist.Reset();
+                    Main.Log("[SmartSorting] Nothing left to consider; dropping the slot backoff so work can resume.");
+                }
+
+                Diagnostics.Step($"mod found NO candidate out of {considered} considered " +
+                                 $"({(context.Shelves == null ? -1 : context.Shelves.Count)} shelf/shelves, " +
+                                 $"{busy.Count} busy elsewhere)");
                 Main.Log("[SmartSorting] No slot worth restocking; leaving the choice to the game.");
                 return;
             }
@@ -359,28 +384,31 @@ namespace SmartRestockEmployees
             context.TargetProductId = best.ProductId;
             TargetClaims.Claim(context.TargetPlace, self);
 
+            Diagnostics.Step($"mod target: {Diagnostics.Describe(best.Place)} product {best.ProductId}, " +
+                             $"{considered} candidate(s) considered, {kept.Count} box(es) kept");
+
             string state = best.Tier == 0 ? "empty slot" : "fill " + best.Fill.ToString("0.##");
             Main.Log($"[SmartSorting] Target: product {best.ProductId}, {state}, {considered} candidate(s), {kept.Count} box(es).");
         }
 
-        // A slot that already belongs to a product can only take that product back.
-        // A slot that never held anything takes any product in storage that fits on it.
+        // Only a slot that already belongs to a product is ever forced, and only back to that product.
+        //
+        // A slot that has never held stock is the game's call, not this mod's. Whether a product fits
+        // a bare slot depends on its physical size against the shelf, which the game works out in
+        // TryFindEmptyPlacementCandidate and this mod cannot see. It used to guess from the product
+        // type alone through ProductPlace.CanPut, which answers a different question: figurines are
+        // figurines whether or not they fit. Measured on 1.0.5, that guess was wrong for 11 of 13
+        // targets -- the game refused every one, and the mod then blacklisted the slot for its own
+        // mistake until the whole store ran out of candidates and every employee stopped working.
+        //
+        // Returning NoProduct here keeps bare slots out of the forcing path entirely. The game still
+        // fills them on its own, subject to Main.FillFreeSlots, which HavePointsPatch enforces.
         private static int ResolveProductForSlot(ProductPricePlace place, PickupList pickups, PickupIdMap pickupIds)
         {
             int slotProductId = SlotRules.GetSlotProductId(place);
-            if (SlotRules.HasProduct(slotProductId))
-                return pickupIds.ContainsKey(slotProductId) ? slotProductId : SlotRules.NoProduct;
+            if (!SlotRules.HasProduct(slotProductId)) return SlotRules.NoProduct;
 
-            var productPlace = place.ProductPlace;
-            if (productPlace == null) return SlotRules.NoProduct;
-
-            for (int i = 0; i < pickups.Count; i++)
-            {
-                var definition = pickups[i] == null ? null : pickups[i].ProductDefinition;
-                if (definition == null) continue;
-                if (productPlace.CanPut(definition.Type)) return definition.Id;
-            }
-            return SlotRules.NoProduct;
+            return pickupIds.ContainsKey(slotProductId) ? slotProductId : SlotRules.NoProduct;
         }
     }
 
@@ -457,6 +485,7 @@ namespace SmartRestockEmployees
             try
             {
                 __result = Allows(context, __instance);
+                Diagnostics.HavePoints(__result);
             }
             catch (Exception ex)
             {
@@ -472,7 +501,7 @@ namespace SmartRestockEmployees
             if (!Main.KeepEmptySlotProduct) return true;
 
             int slotProductId = SlotRules.GetSlotProductId(place);
-            if (!SlotRules.HasProduct(slotProductId)) return true;
+            if (!SlotRules.HasProduct(slotProductId)) return Main.FillFreeSlots;
 
             if (context.Kind == SearchContext.SearchKind.NextPlace)
                 return !SlotRules.HasProduct(context.ProductId) || slotProductId == context.ProductId;
