@@ -26,10 +26,14 @@ namespace SmartRestockEmployees.Ui
     internal static class ShelfPanel
     {
         private const float PanelWidth = 420f;
+        private const float TitleBarHeight = 30f;
 
         private static Rect _area = new Rect(40f, 60f, PanelWidth, 520f);
         private static Vector2 _scroll;
         private static bool _listView;
+
+        private static bool _dragging;
+        private static Vector2 _dragGrip;
 
         // The shelf the player picked out of the list. Null means "whatever I am looking at".
         private static ShelfProducts _pinned;
@@ -65,6 +69,9 @@ namespace SmartRestockEmployees.Ui
         {
             var e = Event.current;
             if (e == null || e.type == EventType.Layout) Snapshot();
+
+            // Before BeginArea, while mouse positions are still in screen space.
+            HandleDrag();
 
             if (!Skin.Ready)
             {
@@ -134,6 +141,68 @@ namespace SmartRestockEmployees.Ui
         private static void Queue(Action work)
         {
             _queued = work;
+        }
+
+        public static void MoveTo(float x, float y)
+        {
+            _area.x = x;
+            _area.y = y;
+            ClampToScreen();
+        }
+
+        // Dragging by the title bar, done by hand. GUILayout.Window would give this for free but needs
+        // a GUI.WindowFunction delegate, and Il2Cpp marshalling of those is exactly what this panel
+        // avoids. Moving the area changes where controls land, never which controls exist, so it is
+        // safe to do mid-frame.
+        private static void HandleDrag()
+        {
+            if (!GuiCaps.Events) return;
+
+            var e = Event.current;
+            if (e == null) return;
+
+            // The right end of the title row holds the "See all" button; leaving it out of the grab
+            // area means MouseDown there reaches the button instead of starting a drag.
+            var titleBar = new Rect(_area.x, _area.y, Mathf.Max(0f, _area.width - 140f), TitleBarHeight);
+
+            switch (e.type)
+            {
+                case EventType.MouseDown:
+                    if (e.button != 0 || !titleBar.Contains(e.mousePosition)) break;
+                    _dragging = true;
+                    _dragGrip = e.mousePosition - new Vector2(_area.x, _area.y);
+                    e.Use();
+                    break;
+
+                case EventType.MouseDrag:
+                    if (!_dragging) break;
+                    _area.x = e.mousePosition.x - _dragGrip.x;
+                    _area.y = e.mousePosition.y - _dragGrip.y;
+                    ClampToScreen();
+                    e.Use();
+                    break;
+
+                case EventType.MouseUp:
+                    if (!_dragging) break;
+                    _dragging = false;
+                    ClampToScreen();
+                    Main.SavePanelPosition(_area.x, _area.y);
+                    e.Use();
+                    break;
+            }
+        }
+
+        // Never let the title bar leave the screen, or there is no way to grab it back.
+        private static void ClampToScreen()
+        {
+            // At mod-init time the screen size can still be zero; clamping against that would throw
+            // the panel off to the left before it is ever shown.
+            if (Screen.width <= 0 || Screen.height <= 0) return;
+
+            float maxX = Mathf.Max(0f, Screen.width - 80f);
+            float maxY = Mathf.Max(0f, Screen.height - TitleBarHeight);
+            _area.x = Mathf.Clamp(_area.x, 80f - _area.width, maxX);
+            _area.y = Mathf.Clamp(_area.y, 0f, maxY);
         }
 
         private static void Header()
@@ -256,39 +325,50 @@ namespace SmartRestockEmployees.Ui
                 : "The second delivery zone is not open yet, so items will go to Delivery 1.", Skin.Hint);
 
             GUILayout.Space(12f);
+            // Forgetting a shelf that still holds stock would strip its price tag out from under the
+            // items sitting on it. The stock goes back to a delivery zone first, and only then can the
+            // shelf be set aside -- which is the order the buttons appear in.
+            bool hasStock = entry.ItemCount > 0;
+
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
             GUILayout.Label("Keep this shelf empty", Skin.Body);
             GUILayout.Label(_shelfLocked
-                ? "Employees leave this shelf alone. You can still stock it yourself."
-                : "Clears its price tag and takes it off the employees' round.", Skin.Hint);
+                    ? "Employees leave this shelf alone. You can still stock it yourself."
+                    : hasStock
+                        ? "Pack the stock away first, then you can set this shelf aside."
+                        : "Clears its price tag and takes it off the employees' round.",
+                Skin.Hint);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
 
-            if (_shelfLocked)
+            // The button is always drawn, greyed out rather than missing, so the panel does not
+            // rearrange itself and the player can see the option exists and why it is not available.
+            bool wasEnabled = GUI.enabled;
+            GUI.enabled = wasEnabled && (_shelfLocked || !hasStock);
+
+            if (GUILayout.Button(_shelfLocked ? "Allow" : "Forget", Skin.Secondary, GUILayout.Width(96f)))
             {
-                if (GUILayout.Button("Allow", Skin.Secondary, GUILayout.Width(96f)))
+                var shelf = entry.Shelf;
+                bool unlock = _shelfLocked;
+                Queue(() =>
                 {
-                    var shelf = entry.Shelf;
-                    Queue(() =>
+                    if (unlock)
                     {
                         ShelfLocks.Unlock(shelf);
                         _status = "Employees may use this shelf again.";
-                        _shelves = null;
-                    });
-                }
-            }
-            else if (GUILayout.Button("Forget", Skin.Secondary, GUILayout.Width(96f)))
-            {
-                var shelf = entry.Shelf;
-                Queue(() =>
-                {
-                    ShelfMemory.Clear(shelf);
-                    ShelfLocks.Lock(shelf);
-                    _status = "Employees will leave this shelf alone.";
+                    }
+                    else
+                    {
+                        ShelfMemory.Clear(shelf);
+                        ShelfLocks.Lock(shelf);
+                        _status = "Employees will leave this shelf alone.";
+                    }
                     _shelves = null;
                 });
             }
+
+            GUI.enabled = wasEnabled;
             GUILayout.EndHorizontal();
         }
 

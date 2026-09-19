@@ -33,6 +33,8 @@ namespace SmartRestockEmployees
         private static MelonPreferences_Entry<bool> _verboseLogs;
         private static MelonPreferences_Entry<bool> _diagnosticLogs;
         private static MelonPreferences_Entry<string> _panelKey;
+        private static MelonPreferences_Entry<float> _panelX;
+        private static MelonPreferences_Entry<float> _panelY;
 
         public static KeyCode PanelKey { get; private set; } = KeyCode.F7;
         public static bool PanelVisible { get; private set; }
@@ -70,6 +72,12 @@ namespace SmartRestockEmployees
             if (!string.IsNullOrEmpty(_panelKey.Value) &&
                 System.Enum.TryParse<KeyCode>(_panelKey.Value, true, out var parsed))
                 PanelKey = parsed;
+
+            _panelX = category.CreateEntry("PanelX", 40f, "Panel X",
+                "Where the shelf panel sits on screen. Updated whenever the panel is dragged.");
+            _panelY = category.CreateEntry("PanelY", 60f, "Panel Y",
+                "Where the shelf panel sits on screen. Updated whenever the panel is dragged.");
+            ShelfPanel.MoveTo(_panelX.Value, _panelY.Value);
 
             ShelfLocks.Load();
 
@@ -140,6 +148,16 @@ namespace SmartRestockEmployees
         {
             if (_fillFreeSlots == null) return;
             _fillFreeSlots.Value = value;
+            MelonPreferences.Save();
+        }
+
+        public static void SavePanelPosition(float x, float y)
+        {
+            if (_panelX == null || _panelY == null) return;
+            if (Mathf.Approximately(_panelX.Value, x) && Mathf.Approximately(_panelY.Value, y)) return;
+
+            _panelX.Value = x;
+            _panelY.Value = y;
             MelonPreferences.Save();
         }
 
