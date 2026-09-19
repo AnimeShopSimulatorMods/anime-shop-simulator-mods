@@ -1,4 +1,5 @@
 using HarmonyLib;
+using MelonLoader;
 using Il2CppProject.Code.Gameplay.AI.Employee;
 using Il2CppProject.Code.Gameplay.Player.Products;
 using PickupList = Il2CppSystem.Collections.Generic.List<Il2CppProject.Code.Gameplay.Player.Products.PickupProducts>;
@@ -60,6 +61,33 @@ namespace SmartRestockEmployees
         public static void Postfix(bool __result)
         {
             Diagnostics.ShelfCheck(__result);
+        }
+    }
+
+    // A tripwire, always on. Something is filling slots the player set aside, and the mod's filter is
+    // clearly not on that path. This fires the moment an item lands in a locked slot and says which
+    // search -- if any -- was running at the time, which is the one fact needed to find the path.
+    [HarmonyPatch(typeof(ProductPricePlace), "HandleOnProductAdded")]
+    public static class LockedSlotTripwirePatch
+    {
+        [HarmonyPostfix]
+        public static void Postfix(ProductPricePlace __instance)
+        {
+            try
+            {
+                if (!ShelfLocks.IsLocked(__instance)) return;
+
+                var context = SearchContext.Current;
+                string during = context == null
+                    ? "no mod search active"
+                    : $"during {context.Kind}, restricting={context.Restricting}, bypass={context.Bypass}";
+
+                MelonLogger.Warning($"[LockLeak] An item was added to a slot set to stay empty ({during}).");
+            }
+            catch
+            {
+                // A tripwire must never be the thing that breaks the game.
+            }
         }
     }
 }

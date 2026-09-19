@@ -51,7 +51,9 @@ namespace SmartRestockEmployees.Ui
         private static float _nextScan;
         private static bool _isServer;
         private static bool _hasSecondZone;
-        private static bool _shelfLocked;
+        private static int _lockedSlots;
+        private static int _freeSlots;
+        private static int _totalSlots;
 
         public static void Reset()
         {
@@ -124,7 +126,9 @@ namespace SmartRestockEmployees.Ui
 
                 var shelf = _pinned != null ? _pinned : ShelfFinder.UnderCrosshair();
                 _shelf = shelf == null ? null : ShelfFinder.Describe(shelf, GameLinks.Products);
-                _shelfLocked = shelf != null && ShelfLocks.IsShelfLocked(shelf);
+                _lockedSlots = ShelfLocks.LockedSlots(shelf);
+                _freeSlots = ShelfLocks.EmptySlots(shelf) - _lockedSlots;
+                _totalSlots = _shelf == null ? 0 : _shelf.SlotCount;
 
                 if (_listView && (_shelves == null || Time.realtimeSinceStartup > _nextScan))
                 {
@@ -325,19 +329,17 @@ namespace SmartRestockEmployees.Ui
                 : "The second delivery zone is not open yet, so items will go to Delivery 1.", Skin.Hint);
 
             GUILayout.Space(12f);
-            // Forgetting a shelf that still holds stock would strip its price tag out from under the
-            // items sitting on it. The stock goes back to a delivery zone first, and only then can the
-            // shelf be set aside -- which is the order the buttons appear in.
-            bool hasStock = entry.ItemCount > 0;
-
+            // Per slot, not per shelf. Forget sets aside the slots on this shelf that are holding
+            // nothing; slots that still have stock keep working. So a half-full shelf is a perfectly
+            // good thing to press this on -- what it needs is at least one empty slot to act on.
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            GUILayout.Label("Keep this shelf empty", Skin.Body);
-            GUILayout.Label(_shelfLocked
-                    ? "Employees leave this shelf alone. You can still stock it yourself."
-                    : hasStock
-                        ? "Pack the stock away first, then you can set this shelf aside."
-                        : "Clears its price tag and takes it off the employees' round.",
+            GUILayout.Label("Keep empty slots empty", Skin.Body);
+            GUILayout.Label(_lockedSlots > 0
+                    ? $"{_lockedSlots} of {_totalSlots} slots here are set aside. You can still stock them yourself."
+                    : _freeSlots > 0
+                        ? $"Sets aside the {_freeSlots} empty slot(s) on this shelf and clears their price tags."
+                        : "Every slot here has stock. Pack some away first.",
                 Skin.Hint);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
@@ -345,24 +347,26 @@ namespace SmartRestockEmployees.Ui
             // The button is always drawn, greyed out rather than missing, so the panel does not
             // rearrange itself and the player can see the option exists and why it is not available.
             bool wasEnabled = GUI.enabled;
-            GUI.enabled = wasEnabled && (_shelfLocked || !hasStock);
+            GUI.enabled = wasEnabled && (_lockedSlots > 0 || _freeSlots > 0);
 
-            if (GUILayout.Button(_shelfLocked ? "Allow" : "Forget", Skin.Secondary, GUILayout.Width(96f)))
+            if (GUILayout.Button(_lockedSlots > 0 ? "Allow" : "Forget", Skin.Secondary, GUILayout.Width(96f)))
             {
                 var shelf = entry.Shelf;
-                bool unlock = _shelfLocked;
+                bool unlock = _lockedSlots > 0;
                 Queue(() =>
                 {
                     if (unlock)
                     {
-                        ShelfLocks.Unlock(shelf);
-                        _status = "Employees may use this shelf again.";
+                        int freed = ShelfLocks.Unlock(shelf);
+                        _status = $"Employees may use {freed} slot(s) on this shelf again.";
                     }
                     else
                     {
                         ShelfMemory.Clear(shelf);
-                        ShelfLocks.Lock(shelf);
-                        _status = "Employees will leave this shelf alone.";
+                        int locked = ShelfLocks.LockEmptySlots(shelf);
+                        _status = locked > 0
+                            ? $"{locked} slot(s) set aside. Employees will leave them empty."
+                            : "Nothing here to set aside.";
                     }
                     _shelves = null;
                 });
@@ -413,8 +417,14 @@ namespace SmartRestockEmployees.Ui
                 {
                     var result = DeliveryReturn.Run(_pendingShelf, GameLinks.Orders, GameLinks.Products,
                         _pendingSecondZone);
+
+                    // Packing a shelf away and then watching employees refill it is the whole
+                    // annoyance this panel exists to end, so emptying sets the slots aside too.
                     ShelfMemory.Clear(_pendingShelf);
-                    _status = Describe(result);
+                    int locked = ShelfLocks.LockEmptySlots(_pendingShelf);
+
+                    _status = Describe(result) +
+                              (locked > 0 ? $" {locked} slot(s) set aside, so employees will leave them empty." : "");
                     _pendingShelf = null;
                     _shelves = null;
                 });

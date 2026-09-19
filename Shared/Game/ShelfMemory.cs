@@ -58,6 +58,11 @@ namespace AnimeShopMods.Game
 
                 try
                 {
+                    // Per slot, never per shelf. Stripping the tag off a slot that still holds stock
+                    // would leave items sitting there with no price on them.
+                    var productPlace = place.ProductPlace;
+                    if (productPlace != null && productPlace.Count > 0) continue;
+
                     if (!Remembers(place) && !HasBinding(place)) continue;
                     Unassign(place);
                     cleared++;

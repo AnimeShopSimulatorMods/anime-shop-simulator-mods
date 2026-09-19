@@ -8,16 +8,16 @@ using MelonLoader.Utils;
 
 namespace SmartRestockEmployees
 {
-    // Shelves the player has told employees to leave alone.
+    // Shelf slots the player has told employees to leave alone.
     //
-    // This is the one piece of state the mod keeps of its own, and it exists because nothing in the
-    // game distinguishes "bare because the player wants it bare" from "bare because nothing has been
-    // put there yet". Forgetting a shelf produces the second, and the store-wide switch may then
-    // refill it, which made the button's promise false.
+    // Locks are per slot, not per shelf. One shelf holds several slots and they are independent: a
+    // player can pack away the figurines in two of them, set those two aside, and leave the rest of
+    // the shelf working.
     //
-    // Slots are keyed by PersistentGuid, so the list is safe to keep in one file: the ids are GUIDs
-    // and cannot collide between save files. A stale id for a shelf that no longer exists is simply
-    // never matched.
+    // This is the only state the mod keeps of its own, and it exists because nothing in the game
+    // separates "bare because the player wants it bare" from "bare because nothing has been put there
+    // yet". Slots are keyed by the game's own persistent id, so one file is safe across save files
+    // and a stale id is simply never matched.
     internal static class ShelfLocks
     {
         private const string FileName = "locked-shelves.txt";
@@ -25,6 +25,9 @@ namespace SmartRestockEmployees
         private static readonly HashSet<string> Locked = new HashSet<string>(StringComparer.Ordinal);
         private static string _path;
         private static bool _loaded;
+        private static bool _warnedAboutKeys;
+
+        public static int Count => Locked.Count;
 
         public static void Load()
         {
@@ -34,14 +37,18 @@ namespace SmartRestockEmployees
             try
             {
                 _path = Path.Combine(ResolveUserData(), "SmartRestockEmployees", FileName);
-                if (!File.Exists(_path)) return;
+                if (!File.Exists(_path))
+                {
+                    MelonLogger.Msg($"[ShelfLocks] No {FileName} yet; no slots are set to stay empty.");
+                    return;
+                }
 
                 foreach (var line in File.ReadAllLines(_path))
                 {
                     var id = line.Trim();
                     if (id.Length > 0 && !id.StartsWith("#")) Locked.Add(id);
                 }
-                MelonLogger.Msg($"{ModInfo.Name}: {Locked.Count} shelf slot(s) set to stay empty.");
+                MelonLogger.Msg($"[ShelfLocks] {Locked.Count} slot(s) set to stay empty, from {_path}");
             }
             catch (Exception ex)
             {
@@ -56,50 +63,97 @@ namespace SmartRestockEmployees
             return key != null && Locked.Contains(key);
         }
 
-        public static bool IsShelfLocked(ShelfProducts shelf)
+        public static int LockedSlots(ShelfProducts shelf)
         {
-            if (Locked.Count == 0 || shelf == null) return false;
-            try
+            if (Locked.Count == 0) return 0;
+            int count = 0;
+            ForEachSlot(shelf, place =>
             {
-                var places = shelf.Places;
-                if (places == null) return false;
-                for (int i = 0; i < places.Length; i++)
-                    if (places[i] != null && IsLocked(places[i])) return true;
-            }
-            catch
-            {
-                return false;
-            }
-            return false;
+                if (IsLocked(place)) count++;
+            });
+            return count;
         }
 
-        public static void Lock(ShelfProducts shelf) => Apply(shelf, true);
+        // How many slots on this shelf hold nothing right now. "Empty" is per slot: the shelf as a
+        // whole does not have to be bare.
+        public static int EmptySlots(ShelfProducts shelf)
+        {
+            int count = 0;
+            ForEachSlot(shelf, place =>
+            {
+                var productPlace = place.ProductPlace;
+                if (productPlace != null && productPlace.Count == 0) count++;
+            });
+            return count;
+        }
 
-        public static void Unlock(ShelfProducts shelf) => Apply(shelf, false);
+        // Locks every slot on the shelf that is holding nothing. Slots that still have stock are left
+        // working, so this is safe to press on a half-full shelf.
+        public static int LockEmptySlots(ShelfProducts shelf)
+        {
+            int locked = 0;
+            int unkeyable = 0;
 
-        private static void Apply(ShelfProducts shelf, bool locked)
+            ForEachSlot(shelf, place =>
+            {
+                var productPlace = place.ProductPlace;
+                if (productPlace == null || productPlace.Count > 0) return;
+
+                var key = Key(place);
+                if (key == null)
+                {
+                    unkeyable++;
+                    return;
+                }
+                if (Locked.Add(key)) locked++;
+            });
+
+            if (unkeyable > 0)
+                MelonLogger.Warning($"[ShelfLocks] {unkeyable} slot(s) have no persistent id and cannot be set aside.");
+
+            if (locked > 0)
+            {
+                Save();
+                MelonLogger.Msg($"[ShelfLocks] Set {locked} slot(s) aside on '{Name(shelf)}'. {Locked.Count} total.");
+            }
+            else
+            {
+                MelonLogger.Msg($"[ShelfLocks] Nothing new to set aside on '{Name(shelf)}'.");
+            }
+            return locked;
+        }
+
+        public static int Unlock(ShelfProducts shelf)
+        {
+            int freed = 0;
+            ForEachSlot(shelf, place =>
+            {
+                var key = Key(place);
+                if (key != null && Locked.Remove(key)) freed++;
+            });
+
+            if (freed > 0)
+            {
+                Save();
+                MelonLogger.Msg($"[ShelfLocks] Released {freed} slot(s) on '{Name(shelf)}'. {Locked.Count} total.");
+            }
+            return freed;
+        }
+
+        private static void ForEachSlot(ShelfProducts shelf, Action<ProductPricePlace> visit)
         {
             if (shelf == null) return;
-
-            bool changed = false;
             try
             {
                 var places = shelf.Places;
                 if (places == null) return;
-
                 for (int i = 0; i < places.Length; i++)
-                {
-                    var key = Key(places[i]);
-                    if (key == null) continue;
-                    changed |= locked ? Locked.Add(key) : Locked.Remove(key);
-                }
+                    if (places[i] != null) visit(places[i]);
             }
             catch (Exception ex)
             {
-                MelonLogger.Error($"[ShelfLocks] Could not update a shelf: {ex.Message}");
+                MelonLogger.Error($"[ShelfLocks] Walking a shelf's slots failed: {ex.Message}");
             }
-
-            if (changed) Save();
         }
 
         private static string Key(ProductPricePlace place)
@@ -107,18 +161,34 @@ namespace SmartRestockEmployees
             if (place == null) return null;
             try
             {
-                // PersistentId is the game's own slot key where it exists; the GUID is the fallback
-                // for shelves that were never set up as building places.
+                // PersistentId is the game's own slot key; the GUID is the fallback for shelves that
+                // were never set up as building places.
                 var id = place.PersistentId;
                 if (!string.IsNullOrEmpty(id)) return id;
 
-                var guid = place.PersistentGuid;
-                var text = guid.ToString();
-                return string.IsNullOrEmpty(text) || text == Il2CppSystem.Guid.Empty.ToString() ? null : text;
+                var text = place.PersistentGuid.ToString();
+                if (!string.IsNullOrEmpty(text) && text != Il2CppSystem.Guid.Empty.ToString()) return text;
+            }
+            catch (Exception ex)
+            {
+                if (!_warnedAboutKeys)
+                {
+                    _warnedAboutKeys = true;
+                    MelonLogger.Warning($"[ShelfLocks] Could not read a slot's persistent id: {ex.GetType().Name}");
+                }
+            }
+            return null;
+        }
+
+        private static string Name(ShelfProducts shelf)
+        {
+            try
+            {
+                return shelf == null ? "?" : shelf.gameObject.name;
             }
             catch
             {
-                return null;
+                return "?";
             }
         }
 
