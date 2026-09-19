@@ -33,10 +33,16 @@ namespace AnimeShopMods.Ui
         public static bool ScrollView { get; private set; }
         public static bool Events { get; private set; }
 
+        // Needed by any menu that wants to look like part of the game rather than a debug overlay.
+        public static bool CustomStyle { get; private set; }
+        public static bool DrawTexture { get; private set; }
+        public static Font GameFont { get; private set; }
+
         public static void Reset()
         {
             Surveyed = false;
             _logged = false;
+            GameFont = null;
         }
 
         // Called once per event pass of a single frame. The checks are repeated on each pass on purpose:
@@ -75,6 +81,17 @@ namespace AnimeShopMods.Ui
                 GUILayout.EndScrollView();
             });
 
+            CustomStyle = Check(report, "new GUIStyle", () =>
+            {
+                var style = new GUIStyle(GUI.skin.button) { fontSize = 13 };
+                style.normal.background = Texture2D.whiteTexture;
+            });
+
+            DrawTexture = Check(report, "GUI.DrawTexture", () =>
+                GUI.DrawTexture(Scratch, Texture2D.whiteTexture));
+
+            GameFont = FindFont(report);
+
             if (_logged) return;
             _logged = true;
 
@@ -95,6 +112,37 @@ namespace AnimeShopMods.Ui
             {
                 report.Add($"FAIL  {label} -> {ex.GetType().Name}");
                 return false;
+            }
+        }
+
+        // IMGUI's built-in font is small and plain. The game ships nicer ones and borrowing one costs
+        // nothing, but only a dynamic font is safe: a static bitmap font renders any character outside
+        // the atlas it was baked with as a blank box.
+        private static Font FindFont(List<string> report)
+        {
+            try
+            {
+                var fonts = Resources.FindObjectsOfTypeAll<Font>();
+                if (fonts == null || fonts.Length == 0)
+                {
+                    report.Add("FAIL  game Font -> none found");
+                    return null;
+                }
+
+                foreach (var font in fonts)
+                {
+                    if (font == null || !font.dynamic) continue;
+                    report.Add($"OK    game Font -> {font.name}");
+                    return font;
+                }
+
+                report.Add("FAIL  game Font -> none dynamic");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                report.Add($"FAIL  game Font -> {ex.GetType().Name}");
+                return null;
             }
         }
 
