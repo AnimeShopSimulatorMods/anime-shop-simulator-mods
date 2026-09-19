@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace CheatForDev.Ui
+namespace AnimeShopMods.Ui
 {
     // Every control the menu uses, each one able to fall back to something this game's stripped IMGUI
     // can still draw. Typing is the first casualty: GUILayout.TextField is usually gone, so numbers are

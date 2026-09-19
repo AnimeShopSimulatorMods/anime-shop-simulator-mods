@@ -3,4 +3,7 @@
     <AssemblyName>CheatForDev</AssemblyName>
     <RootNamespace>CheatForDev</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" />
+  </ItemGroup>
 </Project>

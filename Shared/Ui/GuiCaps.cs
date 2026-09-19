@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev.Ui
+namespace AnimeShopMods.Ui
 {
     // The game ships with most of IMGUI stripped, and Il2CppInterop can only rebuild part of it: calling
     // a missing control throws NotSupportedException("Method unstripping failed") every single frame.
@@ -78,9 +78,9 @@ namespace CheatForDev.Ui
             if (_logged) return;
             _logged = true;
 
-            MelonLogger.Msg("===== [CheatForDev] IMGUI survey =====");
+            MelonLogger.Msg("===== [ModUi] IMGUI survey =====");
             foreach (var line in report) MelonLogger.Msg("  " + line);
-            MelonLogger.Msg("===== [CheatForDev] IMGUI survey end =====");
+            MelonLogger.Msg("===== [ModUi] IMGUI survey end =====");
         }
 
         private static bool Check(List<string> report, string label, Action call)

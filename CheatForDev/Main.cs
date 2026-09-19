@@ -1,10 +1,12 @@
+using AnimeShopMods;
+using AnimeShopMods.Ui;
 using CheatForDev.Cheats;
 using CheatForDev.Ui;
 using MelonLoader;
 using UnityEngine;
 
 [assembly: MelonInfo(typeof(CheatForDev.Main), CheatForDev.ModInfo.Name, CheatForDev.ModInfo.Version, CheatForDev.ModInfo.Author, CheatForDev.ModInfo.DownloadLink)]
-[assembly: MelonGame("OneMoreTime", "Anime Shop Simulator")]
+//[assembly: MelonGame("OneMoreTime", "Anime Shop Simulator")]
 [assembly: MelonColor(255, 255, 120, 120)]
 [assembly: MelonAuthorColor(255, 120, 200, 255)]
 
@@ -14,7 +16,7 @@ namespace CheatForDev
     public static class ModInfo
     {
         public const string Name = "Cheat for Dev";
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
         public const string Author = "1REDfriend";
         public const string DownloadLink = null;
         public const string Description =
@@ -115,7 +117,7 @@ namespace CheatForDev
             }
 
             MenuVisible = visible;
-            if (visible) CursorControl.Acquire();
+            if (visible) CursorControl.Acquire(GameAccess.Ui);
             else CursorControl.Release();
         }
 

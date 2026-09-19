@@ -4,7 +4,7 @@ using Il2CppProject.Code.Core.UI;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev
+namespace AnimeShopMods
 {
     // The game hands out cursor "leases" so several systems can ask for a visible mouse without fighting
     // each other. Borrowing one is far safer than writing Cursor.lockState behind the game's back; the
@@ -15,13 +15,14 @@ namespace CheatForDev
         private static Il2CppSystem.Object _owner;
         private static bool _manualFallback;
 
-        public static void Acquire()
+        // The UIService is passed in rather than looked up: each mod reaches it its own way, and this
+        // file has to compile into all of them.
+        public static void Acquire(UIService ui)
         {
             if (_lease != null || _manualFallback) return;
 
             try
             {
-                var ui = GameAccess.Ui;
                 if (ui != null)
                 {
                     _owner ??= new Il2CppSystem.Object();
@@ -31,7 +32,7 @@ namespace CheatForDev
             }
             catch (Exception ex)
             {
-                MelonLogger.Warning($"[CheatForDev] Could not borrow the game's cursor ({ex.GetType().Name}); showing it directly.");
+                MelonLogger.Warning($"[ModUi] Could not borrow the game's cursor ({ex.GetType().Name}); showing it directly.");
             }
 
             _manualFallback = true;
@@ -49,7 +50,7 @@ namespace CheatForDev
                 }
                 catch (Exception ex)
                 {
-                    MelonLogger.Error($"[CheatForDev] Returning the cursor failed: {ex.Message}");
+                    MelonLogger.Error($"[ModUi] Returning the cursor failed: {ex.Message}");
                 }
                 _lease = null;
                 return;

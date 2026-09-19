@@ -1,3 +1,5 @@
+using AnimeShopMods;
+using AnimeShopMods.Ui;
 using System;
 using System.Collections.Generic;
 using CheatForDev.Cheats;
