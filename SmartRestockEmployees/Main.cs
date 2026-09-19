@@ -1,4 +1,8 @@
+using AnimeShopMods;
+using AnimeShopMods.Ui;
 using MelonLoader;
+using SmartRestockEmployees.Ui;
+using UnityEngine;
 
 [assembly: MelonInfo(typeof(SmartRestockEmployees.Main), SmartRestockEmployees.ModInfo.Name, SmartRestockEmployees.ModInfo.Version, SmartRestockEmployees.ModInfo.Author, SmartRestockEmployees.ModInfo.DownloadLink)]
 //[assembly: MelonGame("OneMoreTime", "Anime Shop Simulator")]
@@ -11,7 +15,7 @@ namespace SmartRestockEmployees
     public static class ModInfo
     {
         public const string Name = "Smart Restock Employees";
-        public const string Version = "1.3.0";
+        public const string Version = "1.4.0";
         public const string Author = "1REDfriend";
         // Fill in the Nexus Mods page URL after the first upload, then rebuild.
         public const string DownloadLink = null;
@@ -28,6 +32,10 @@ namespace SmartRestockEmployees
         private static MelonPreferences_Entry<float> _stuckSeconds;
         private static MelonPreferences_Entry<bool> _verboseLogs;
         private static MelonPreferences_Entry<bool> _diagnosticLogs;
+        private static MelonPreferences_Entry<string> _panelKey;
+
+        public static KeyCode PanelKey { get; private set; } = KeyCode.F7;
+        public static bool PanelVisible { get; private set; }
 
         public static bool EmptyShelvesFirst => _emptyShelvesFirst == null || _emptyShelvesFirst.Value;
         public static bool KeepEmptySlotProduct => _keepEmptySlotProduct == null || _keepEmptySlotProduct.Value;
@@ -55,14 +63,53 @@ namespace SmartRestockEmployees
                 "Log every retarget decision to the MelonLoader console.");
             _diagnosticLogs = category.CreateEntry("DiagnosticLogs", false, "Diagnostic logs",
                 "Trace the game's own restock search step by step. Very noisy; for bug hunting only.");
+            // F7, not F8: CheatForDev owns F8 and some players run both.
+            _panelKey = category.CreateEntry("PanelKey", "F7", "Panel key",
+                "Key that opens the shelf panel. Any UnityEngine.KeyCode name.");
 
-            MelonLogger.Msg($"{ModInfo.Name} {ModInfo.Version} loaded.");
+            if (!string.IsNullOrEmpty(_panelKey.Value) &&
+                System.Enum.TryParse<KeyCode>(_panelKey.Value, true, out var parsed))
+                PanelKey = parsed;
+
+            MelonLogger.Msg($"{ModInfo.Name} {ModInfo.Version} loaded. Press {PanelKey} for the shelf panel.");
         }
 
         public override void OnUpdate()
         {
             if (StuckWatchdogEnabled)
                 StuckWatchdog.Tick();
+
+            if (Input.GetKeyDown(PanelKey))
+                SetPanelVisible(!PanelVisible);
+
+            if (!PanelVisible) return;
+
+            if (!GameLinks.InGame) SetPanelVisible(false);
+            else CursorControl.Tick();
+        }
+
+        private static void SetPanelVisible(bool visible)
+        {
+            PanelVisible = visible;
+            if (visible) CursorControl.Acquire(GameLinks.Ui);
+            else CursorControl.Release();
+            ShelfPanel.Reset();
+        }
+
+        public override void OnGUI()
+        {
+            if (!PanelVisible) return;
+
+            // The survey owns its whole frame and draws nothing else. IMGUI matches controls between
+            // the layout and repaint passes and throws if the set differs between them.
+            if (!GuiCaps.Surveyed)
+            {
+                GuiCaps.Survey();
+                return;
+            }
+
+            Skin.EnsureBuilt();
+            ShelfPanel.Draw();
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -72,6 +119,19 @@ namespace SmartRestockEmployees
             SearchContext.Reset();
             TargetBlacklist.Reset();
             TargetClaims.Reset();
+
+            GameLinks.Reset();
+            GuiCaps.Reset();
+            Skin.Reset();
+            CursorControl.Reset();
+            SetPanelVisible(false);
+        }
+
+        public static void SetFillFreeSlots(bool value)
+        {
+            if (_fillFreeSlots == null) return;
+            _fillFreeSlots.Value = value;
+            MelonPreferences.Save();
         }
 
         public static void Log(string message)
