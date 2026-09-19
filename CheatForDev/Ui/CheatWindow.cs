@@ -45,6 +45,9 @@ namespace CheatForDev.Ui
         private static readonly HashSet<int> _selectedShelves = new HashSet<int>();
         private static bool _aimMode;
 
+        // Unlocks
+        private static bool _confirmSkipTutorial;
+
         // Orders
         private static int _selectedBoxId = -1;
         private static string _selectedBoxLabel = "(none)";
@@ -118,6 +121,7 @@ namespace CheatForDev.Ui
             _shelves = null;
             _selectedShelves.Clear();
             _aimMode = false;
+            _confirmSkipTutorial = false;
             _catalogPage = 0;
             _licenses = null;
             _reportedFailures.Clear();
@@ -228,9 +232,14 @@ namespace CheatForDev.Ui
             if (!Mathf.Approximately(_infiniteTarget, ProgressCheats.InfiniteMoneyTarget))
                 ProgressCheats.InfiniteMoneyTarget = Mathf.Max(1f, _infiniteTarget);
 
+            // Crystals and tournament wins are stored per player rather than in the parameter table the
+            // rest of this tab uses, so they go through their own helpers. See ProgressCheats.
             Controls.Space(10f);
             Controls.Header("Crystals");
-            StepParameter("Crystals", ParameterType.Crystal, SmallSteps);
+            int crystals = ProgressCheats.GetCrystals();
+            float wantedCrystals = Controls.Stepper("Crystals", crystals, SmallSteps);
+            if (!Mathf.Approximately(wantedCrystals, crystals))
+                ProgressCheats.SetCrystals(wantedCrystals);
 
             Controls.Space(10f);
             Controls.Header("Shop progression");
@@ -241,7 +250,18 @@ namespace CheatForDev.Ui
             StepParameter("Experience", ParameterType.Exp, SmallSteps);
             StepParameter("Level", ParameterType.Level, new[] { 1f, 5f });
             StepParameter("Day", ParameterType.Day, new[] { 1f, 5f });
-            StepParameter("Tournament wins", ParameterType.Wins, new[] { 1f, 5f });
+
+            int wins = ProgressCheats.GetWins();
+            if (wins < 0)
+            {
+                Controls.Label("Tournament wins: the game has not mapped this player yet.");
+            }
+            else
+            {
+                float wantedWins = Controls.Stepper("Tournament wins", wins, new[] { 1f, 5f });
+                if (!Mathf.Approximately(wantedWins, wins))
+                    ProgressCheats.SetWins(wantedWins);
+            }
         }
 
         private static void StepParameter(string label, ParameterType type, float[] steps)
@@ -574,6 +594,25 @@ namespace CheatForDev.Ui
             Controls.EndRow();
 
             Controls.Space(10f);
+            Controls.Header("Inventory tools");
+            Controls.Label(UnlockCheats.InventoryToolStatus);
+            Controls.BeginRow();
+            if (Controls.Button("Unlock every tool", 190f)) UnlockCheats.UnlockInventoryTools();
+            Controls.EndRow();
+            Controls.Label("Written to the save, so it survives a restart.");
+
+            Controls.Space(10f);
+            Controls.Header("Crystal shop");
+            Controls.Label(UnlockCheats.SpecialShopStatus);
+            Controls.BeginRow();
+            if (Controls.Button("Open the crystal shop", 200f)) UnlockCheats.UnlockSpecialShop();
+            Controls.EndRow();
+            Controls.Label("The stand that sells special packs for crystals. Also written to the save.");
+
+            Controls.Space(10f);
+            DrawTutorial();
+
+            Controls.Space(10f);
             DrawLicenses();
 
             Controls.Space(10f);
@@ -592,11 +631,45 @@ namespace CheatForDev.Ui
             Controls.Label("Found it in the scene - these call the developers' own code.");
             Controls.BeginRow();
             if (Controls.Button("Open all cards", 160f)) UnlockCheats.OpenAllCards();
-            if (Controls.Button("Unlock inventory tools", 200f)) UnlockCheats.UnlockInventoryTools();
+            if (Controls.Button("Session-only tool cheat", 200f)) UnlockCheats.ToggleNativeToolCheat();
             if (Controls.Button("Spawn buildings", 160f)) UnlockCheats.SpawnBuildings();
             Controls.EndRow();
             Controls.BeginRow();
             if (Controls.Button("Toggle the game's panel", 210f)) UnlockCheats.ToggleNativePanel();
+            Controls.EndRow();
+        }
+
+        // Skipping is written to the save and there is no undo, so it takes two clicks. Everything else in
+        // this menu can be put back by clicking the other way; this one cannot.
+        private static void DrawTutorial()
+        {
+            Controls.Header("Tutorial");
+
+            if (!TutorialCheats.Available)
+            {
+                Controls.Label("The tutorial controller is not in this scene.");
+                _confirmSkipTutorial = false;
+                return;
+            }
+
+            Controls.Label(TutorialCheats.Status);
+
+            if (!_confirmSkipTutorial)
+            {
+                Controls.BeginRow();
+                if (Controls.Button("Skip the whole tutorial", 220f)) _confirmSkipTutorial = true;
+                Controls.EndRow();
+                return;
+            }
+
+            Controls.Label("This finishes every step and every popup, and it is written to the save. No undo.");
+            Controls.BeginRow();
+            if (Controls.Button("Yes, skip it", 140f))
+            {
+                TutorialCheats.SkipAll();
+                _confirmSkipTutorial = false;
+            }
+            if (Controls.Button("Cancel", 100f)) _confirmSkipTutorial = false;
             Controls.EndRow();
         }
     }

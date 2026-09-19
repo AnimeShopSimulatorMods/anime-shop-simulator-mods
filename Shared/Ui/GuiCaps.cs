@@ -95,22 +95,34 @@ namespace AnimeShopMods.Ui
             if (_logged) return;
             _logged = true;
 
+            int missing = 0;
+            foreach (var line in report)
+                if (line.StartsWith(Missing)) missing++;
+
+            // Worded carefully: a stripped control is the expected result here, not a failure, and every
+            // menu is built to work without it. An earlier version printed "FAIL" next to a
+            // NotSupportedException and players reasonably read that as the mod being broken.
             MelonLogger.Msg("===== [ModUi] IMGUI survey =====");
+            MelonLogger.Msg($"  {report.Count - missing} of {report.Count} controls are usable in this build. " +
+                            "Anything missing is normal - the menu leaves it out and uses a substitute.");
             foreach (var line in report) MelonLogger.Msg("  " + line);
             MelonLogger.Msg("===== [ModUi] IMGUI survey end =====");
         }
+
+        private const string Present = "usable      ";
+        private const string Missing = "not in build";
 
         private static bool Check(List<string> report, string label, Action call)
         {
             try
             {
                 call();
-                report.Add($"OK    {label}");
+                report.Add($"{Present}  {label}");
                 return true;
             }
             catch (Exception ex)
             {
-                report.Add($"FAIL  {label} -> {ex.GetType().Name}");
+                report.Add($"{Missing}  {label} ({ex.GetType().Name})");
                 return false;
             }
         }
@@ -125,23 +137,23 @@ namespace AnimeShopMods.Ui
                 var fonts = Resources.FindObjectsOfTypeAll<Font>();
                 if (fonts == null || fonts.Length == 0)
                 {
-                    report.Add("FAIL  game Font -> none found");
+                    report.Add($"{Missing}  game font (none loaded)");
                     return null;
                 }
 
                 foreach (var font in fonts)
                 {
                     if (font == null || !font.dynamic) continue;
-                    report.Add($"OK    game Font -> {font.name}");
+                    report.Add($"{Present}  game font: {font.name}");
                     return font;
                 }
 
-                report.Add("FAIL  game Font -> none dynamic");
+                report.Add($"{Missing}  game font (none dynamic; the built-in one is used instead)");
                 return null;
             }
             catch (Exception ex)
             {
-                report.Add($"FAIL  game Font -> {ex.GetType().Name}");
+                report.Add($"{Missing}  game font ({ex.GetType().Name})");
                 return null;
             }
         }
@@ -154,12 +166,12 @@ namespace AnimeShopMods.Ui
                 GUILayout.BeginArea(Scratch);
                 areaOpen = true;
                 call();
-                report.Add($"OK    {label}");
+                report.Add($"{Present}  {label}");
                 return true;
             }
             catch (Exception ex)
             {
-                report.Add($"FAIL  {label} -> {ex.GetType().Name}");
+                report.Add($"{Missing}  {label} ({ex.GetType().Name})");
                 return false;
             }
             finally

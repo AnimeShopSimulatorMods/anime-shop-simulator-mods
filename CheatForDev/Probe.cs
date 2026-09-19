@@ -134,18 +134,86 @@ namespace CheatForDev
             Report<OrderController>("OrderController");
             Report<EmployeesController>("EmployeesController");
             Report<BuyersController>("BuyersController");
+            Report<TutorController>("TutorController");
+            Report<QuestController>("QuestController");
+            MelonLogger.Msg($"  tutorial: {Cheats.TutorialCheats.Status}");
+            MelonLogger.Msg($"  inventory tools: {Cheats.UnlockCheats.InventoryToolStatus}");
+            MelonLogger.Msg($"  {Cheats.UnlockCheats.SpecialShopStatus}");
 
             try
             {
                 var parameters = UnityEngine.Object.FindObjectOfType<ParametersController>();
                 if (parameters == null) return;
+
+                MelonLogger.Msg("Shared parameter table (_parameters):");
                 foreach (ParameterType type in Enum.GetValues(typeof(ParameterType)))
                     MelonLogger.Msg($"  {type} = {parameters.GetFloatValue(type)}");
                 MelonLogger.Msg($"  NeedExp() = {parameters.NeedExp()}");
+
+                ProbePerPlayerValues(parameters);
             }
             catch (Exception ex)
             {
                 MelonLogger.Msg($"Parameter values -> THREW {ex.Message}");
+            }
+        }
+
+        // Crystals and tournament wins are kept per player, not in the table above. Printing both side by
+        // side is the fastest way to see after a game update whether the per-player route still works,
+        // and it is how the 0.2.0 bug would have been caught: the table said one thing, the player's own
+        // balance said another.
+        private static void ProbePerPlayerValues(ParametersController parameters)
+        {
+            try
+            {
+                var connection = parameters.LocalConnection;
+                MelonLogger.Msg("Per-player values (_crystals, _wins):");
+                if (connection == null)
+                {
+                    MelonLogger.Msg("  no local connection yet; crystals and wins cannot be read.");
+                    return;
+                }
+
+                MelonLogger.Msg($"  local connection: clientId={connection.ClientId}");
+                MelonLogger.Msg($"  Crystals = {parameters.GetCrystal(connection)}");
+
+                var map = parameters._playerId;
+                if (map != null && map.TryGetValue(connection.ClientId, out ulong playerId))
+                {
+                    MelonLogger.Msg($"  playerId  = {playerId}");
+                    MelonLogger.Msg($"  Wins     = {parameters.GetWins(playerId)}");
+                }
+                else
+                {
+                    MelonLogger.Msg("  playerId  = not mapped yet; wins cannot be read.");
+                }
+
+                // Versions up to 0.2.0 wrote crystals and wins into the shared table by mistake. Those
+                // entries are inert, but say so plainly rather than leaving a confusing number in a save.
+                WarnAboutStrayTableEntry(parameters, ParameterType.Crystal);
+                WarnAboutStrayTableEntry(parameters, ParameterType.Wins);
+            }
+            catch (Exception ex)
+            {
+                MelonLogger.Msg($"Per-player values -> THREW {ex.Message}");
+            }
+        }
+
+        private static void WarnAboutStrayTableEntry(ParametersController parameters, ParameterType type)
+        {
+            try
+            {
+                float stray = parameters.GetFloatValue(type);
+                if (Mathf.Approximately(stray, 0f)) return;
+
+                MelonLogger.Warning(
+                    $"[CheatForDev] The shared parameter table holds {type} = {stray}. The game does not " +
+                    "read that entry; it is left over from an older version of this mod writing to the " +
+                    "wrong place. It is harmless and your real balance is the per-player value above.");
+            }
+            catch
+            {
+                // The table simply has no entry for this type, which is the normal case.
             }
         }
 

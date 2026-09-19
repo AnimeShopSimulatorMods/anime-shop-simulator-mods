@@ -34,6 +34,13 @@ who wants to skip the grind. Press **F8** in game to open it.
 - Browse every box in the game and spawn 1 to 200 of them straight onto the delivery point.
 - No basket, no payment, no storage limit.
 
+### Unlocks
+- **Unlock every tool** — mop, trash bag, decor kit and bat, written to the save so they survive a restart.
+- **Open the crystal shop** — the stand that sells special packs for crystals. Also saved.
+- **Skip the whole tutorial** — finishes every tutorial step, marks every popup as seen, and grants what
+  the tutorial would have handed you along the way: the tools and the crystal shop. Takes a second click
+  to confirm, because it is saved and has no undo.
+
 ### Testing helpers
 - Turn customers off entirely, or send everyone home — useful for watching employee AI undisturbed.
 - Spawn one customer of any type, including the thief and the shoplifter.
@@ -97,6 +104,30 @@ WindowY = 24.0
 - `WindowX` / `WindowY` — updated automatically whenever you drag the window.
 
 ## Changelog
+
+### 0.3.0
+- Fixed: **Unlock inventory tools** was gone after restarting the game. It called the game's own cheat,
+  which is a session-only flag that is never written to the save. The tools are really gated by four
+  quest flags, and those are what the new **Unlock every tool** button sets. The session-only cheat is
+  still there under the game's own cheat panel, now labelled as session-only.
+- Added: **Open the crystal shop**, in the Unlocks tab. The special-pack stand is hidden until a quest
+  opens it, which a skipped tutorial never reaches, leaving crystals with nowhere to be spent.
+- Added: **Skip the whole tutorial**, in the Unlocks tab. It finishes the step tutorial, marks every
+  one-off popup as seen, and grants what the tutorial would have handed you on the way through - the
+  tools and the crystal shop - so a skipped tutorial does not leave you without a mop or a shop.
+  Two clicks, because it is saved and cannot be undone.
+- Fixed: every button in the **Crystals** section did nothing. Crystals are stored per player, not in the
+  shared parameter table the rest of that tab uses, so the mod was writing to a place the game never reads.
+  They now go through the game's own per-player crystal balance.
+- Fixed: **Tournament wins** did nothing, for the same reason. It now uses the game's `SetWins`, which also
+  clears any tournament rewards you had already claimed above the new number.
+- Tournament wins shows a plain message instead of `0` while the game has not yet mapped your player.
+- Every value the menu writes is now checked afterwards, and a warning is logged if the game did not
+  actually store it. A silent mismatch is what hid the two bugs above for a whole release.
+- The IMGUI capability survey no longer prints `FAIL` next to controls this game does not ship. It says
+  "not in build" and explains that the menu substitutes for them. Nothing was broken; only the wording was.
+- The probe now prints your real crystal and tournament-win balances next to the parameter table, and
+  points out any stray value an older version of this mod left in that table. Those leftovers are inert.
 
 ### 0.2.0
 - Fixed: "Delete its stock" and "Return to delivery" failed with a NullReferenceException and left the shelf untouched.

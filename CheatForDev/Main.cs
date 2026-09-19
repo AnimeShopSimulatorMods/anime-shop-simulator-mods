@@ -16,7 +16,7 @@ namespace CheatForDev
     public static class ModInfo
     {
         public const string Name = "Cheat for Dev";
-        public const string Version = "0.2.0";
+        public const string Version = "0.3.0";
         public const string Author = "1REDfriend";
         public const string DownloadLink = null;
         public const string Description =
@@ -54,6 +54,13 @@ namespace CheatForDev
             ToggleKey = ParseKey(_toggleKey.Value);
             CheatWindow.MoveTo(_windowX.Value, _windowY.Value);
             MelonLogger.Msg($"{ModInfo.Name} {ModInfo.Version} loaded. Press {ToggleKey} to open the menu.");
+            MelonLogger.Msg($"  game: {Application.productName} {Application.version}, unity {Application.unityVersion}");
+
+            // Almost every bug report about this mod comes down to "I pressed it and nothing happened",
+            // which the verbose log answers in one line. Say where the switch is while it is off.
+            if (!VerboseLogs)
+                MelonLogger.Msg("  verbose logs are off. Turn on VerboseLogs in UserData/MelonPreferences.cfg " +
+                                "under [CheatForDev] before reporting anything that looks like it does nothing.");
         }
 
         public override void OnUpdate()
@@ -84,6 +91,7 @@ namespace CheatForDev
             Probe.Reset();
             GameAccess.Reset();
             UnlockCheats.Reset();
+            TutorialCheats.Reset();
             CheatWindow.Reset();
             GuiCaps.Reset();
             CursorControl.Reset();

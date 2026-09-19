@@ -27,6 +27,8 @@
     <Reference Include="Assembly-CSharp" HintPath="$(Il2CppAssembliesPath)\Assembly-CSharp.dll" Private="false" />
     <Reference Include="Il2CppFishNet.Runtime" HintPath="$(Il2CppAssembliesPath)\Il2CppFishNet.Runtime.dll" Private="false" />
     <Reference Include="Il2Cppmscorlib" HintPath="$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll" Private="false" />
+    <!-- Il2CppSystem.Collections.Generic.HashSet and friends live here, not in Il2Cppmscorlib. -->
+    <Reference Include="Il2CppSystem.Core" HintPath="$(Il2CppAssembliesPath)\Il2CppSystem.Core.dll" Private="false" />
     <Reference Include="Il2CppProject" HintPath="$(Il2CppAssembliesPath)\Il2CppProject.dll" Private="false" />
     <Reference Include="Il2CppUniTask" HintPath="$(Il2CppAssembliesPath)\Il2CppUniTask.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll" Private="false" />
