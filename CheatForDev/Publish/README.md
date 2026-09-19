@@ -34,13 +34,6 @@ who wants to skip the grind. Press **F8** in game to open it.
 - Browse every box in the game and spawn 1 to 200 of them straight onto the delivery point.
 - No basket, no payment, no storage limit.
 
-### Unlocks
-- **Unlock every tool** — mop, trash bag, decor kit and bat, written to the save so they survive a restart.
-- **Open the crystal shop** — the stand that sells special packs for crystals. Also saved.
-- **Skip the whole tutorial** — finishes every tutorial step, marks every popup as seen, and grants what
-  the tutorial would have handed you along the way: the tools and the crystal shop. Takes a second click
-  to confirm, because it is saved and has no undo.
-
 ### Testing helpers
 - Turn customers off entirely, or send everyone home — useful for watching employee AI undisturbed.
 - Spawn one customer of any type, including the thief and the shoplifter.
@@ -48,11 +41,16 @@ who wants to skip the grind. Press **F8** in game to open it.
 - Teleport to the delivery point.
 
 ### Unlocks
+- **Unlock every tool** — mop, trash bag, decor kit and bat, written to the save so they survive a restart.
+- **Open the crystal shop** — the stand that sells special packs for crystals. Also saved.
+- **Skip the whole tutorial** — finishes every tutorial step, marks every popup as seen, and grants what
+  the tutorial would have handed you along the way: the tools and the crystal shop. Takes a second click
+  to confirm, because it is saved and has no undo.
 - **Unlock every licence** at once, or one at a time from a list.
 - Buy the next store or storage upgrade.
 - See outstanding bills and rent.
-- If the developers' own cheat panel is present in your build, buttons appear to open all cards, unlock
-  the inventory tools, spawn debug buildings, and show their panel.
+- If the developers' own cheat panel is present in your build, buttons appear to open all cards, spawn
+  debug buildings, show their panel, and flip their session-only inventory tool cheat.
 
 ## Requirements
 
