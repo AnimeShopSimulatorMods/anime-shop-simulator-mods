@@ -33,32 +33,100 @@ namespace AnimeShopMods.Game
 
         // Returns how many slots actually had something to forget, so the caller can tell the player
         // "already forgotten" apart from "forgotten just now".
+        //
+        // Clearing _lastDefinitionId alone is not enough. That field is what this mod reads; the
+        // product icon and price tag on the shelf are drawn from the slot's own binding -- the
+        // _productId SyncVar, _productInfo and the slot's save data -- which the game keeps and can
+        // re-derive the memory from. A half-cleared slot still shows its old tag and starts
+        // remembering again, so the whole binding goes.
+        //
+        // The player's price is not touched: prices belong to the product, not the slot (see
+        // EnsureShelfProductPrice, which is keyed by product id alone). Put the same product back on
+        // the shelf later and its price is still there.
         public static int Clear(ShelfProducts shelf)
         {
             if (shelf == null) return 0;
 
             int cleared = 0;
-            try
+            var places = shelf.Places;
+            if (places == null) return 0;
+
+            for (int i = 0; i < places.Length; i++)
             {
-                var places = shelf.Places;
-                if (places == null) return 0;
+                var place = places[i];
+                if (place == null) continue;
 
-                for (int i = 0; i < places.Length; i++)
+                try
                 {
-                    var place = places[i];
-                    if (place == null || place._lastDefinitionId == 0) continue;
-
-                    place._lastDefinitionId = 0;
-                    // Push the change into the slot's save data, or it comes back on the next load.
-                    place.EnsureProductSaveDataServer(true);
+                    if (!Remembers(place) && !HasBinding(place)) continue;
+                    Unassign(place);
                     cleared++;
                 }
-            }
-            catch (Exception ex)
-            {
-                MelonLogger.Error($"[ShelfMemory] Clearing a shelf failed: {ex}");
+                catch (Exception ex)
+                {
+                    // One bad slot must not stop the rest of the shelf from being cleared.
+                    MelonLogger.Error($"[ShelfMemory] Clearing slot {i} failed: {ex}");
+                }
             }
             return cleared;
         }
+
+        private static bool HasBinding(ProductPricePlace place)
+        {
+            try
+            {
+                return place._productId.Value != default(Il2CppSystem.Guid);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void Unassign(ProductPricePlace place)
+        {
+            place._lastDefinitionId = 0;
+            place._productInfo = null;
+            place._currentIcon = null;
+
+            try
+            {
+                place._productId.Value = default(Il2CppSystem.Guid);
+            }
+            catch (Exception ex)
+            {
+                MelonLogger.Warning($"[ShelfMemory] Could not clear the slot's product id: {ex.GetType().Name}");
+            }
+
+            // Leave the save data with no product, or the binding comes back on the next load.
+            var saveData = place._productSaveData;
+            if (saveData != null)
+            {
+                saveData.ProductId = default(Il2CppSystem.Guid);
+                saveData.Count = 0;
+                saveData.StartCount = 0;
+            }
+
+            // Let the game redraw the slot from the cleared state: this is what takes the icon and
+            // the price tag off the shelf.
+            Try(() => place.SetIcon(null), "SetIcon");
+            Try(place.RefreshProductPresenceState, "RefreshProductPresenceState");
+            Try(place.ApplyVisuals, "ApplyVisuals");
+
+            place.EnsureProductSaveDataServer(true);
+        }
+
+        private static void Try(Action call, string name)
+        {
+            try
+            {
+                call();
+            }
+            catch (Exception ex)
+            {
+                MelonLogger.Warning($"[ShelfMemory] {name} failed: {ex.GetType().Name}");
+            }
+        }
+
     }
 }

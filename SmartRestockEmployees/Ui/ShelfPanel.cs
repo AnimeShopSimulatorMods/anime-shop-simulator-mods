@@ -254,10 +254,14 @@ namespace SmartRestockEmployees.Ui
                 : "The second delivery zone is not open yet, so items will go to Delivery 1.", Skin.Hint);
 
             GUILayout.Space(12f);
+            // Honest about its own limit: forgetting takes the tag off and stops this mod reserving
+            // the shelf, but the store-wide switch below still decides whether the game refills it.
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            GUILayout.Label("Keep this shelf empty", Skin.Body);
-            GUILayout.Label("Forget what used to be here", Skin.Hint);
+            GUILayout.Label("Forget this shelf", Skin.Body);
+            GUILayout.Label(Main.FillFreeSlots
+                ? "Clears its price tag. Employees may still fill it while the switch below says Yes."
+                : "Clears its price tag and leaves the shelf alone.", Skin.Hint);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Forget", Skin.Secondary, GUILayout.Width(96f)))
@@ -346,13 +350,15 @@ namespace SmartRestockEmployees.Ui
                 GUILayout.Space(8f);
             }
 
+            // Phrased as the outcome, not the mechanism. "Use never-filled slots: On" left the player
+            // guessing whether On meant the slots get used or get left alone.
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            GUILayout.Label("Use never-filled slots", Skin.Body);
-            GUILayout.Label("Applies to every shelf in the store", Skin.Hint);
+            GUILayout.Label("Employees may fill bare shelves", Skin.Body);
+            GUILayout.Label("Every shelf in the store, including forgotten ones", Skin.Hint);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(Main.FillFreeSlots ? "On" : "Off", Skin.Secondary, GUILayout.Width(68f)))
+            if (GUILayout.Button(Main.FillFreeSlots ? "Yes" : "No", Skin.Secondary, GUILayout.Width(68f)))
                 Queue(() => Main.SetFillFreeSlots(!Main.FillFreeSlots));
             GUILayout.EndHorizontal();
         }
