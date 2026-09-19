@@ -121,8 +121,7 @@ namespace CheatForDev.Cheats
                 {
                     var productPlace = places[i] == null ? null : places[i].ProductPlace;
                     if (productPlace == null || productPlace.Count == 0) continue;
-                    removed += productPlace.Count;
-                    productPlace.SetCountServer(0, null);
+                    removed += EmptySlot(productPlace);
                 }
                 Main.Log($"[CheatForDev] Deleted {removed} item(s) from '{shelf.gameObject.name}'.");
             }
@@ -163,7 +162,7 @@ namespace CheatForDev.Cheats
                     if (definitionId <= 0)
                     {
                         MelonLogger.Warning($"[CheatForDev] Slot {i} has no product definition; deleting instead of returning.");
-                        productPlace.SetCountServer(0, null);
+                        EmptySlot(productPlace);
                         continue;
                     }
 
@@ -171,7 +170,7 @@ namespace CheatForDev.Cheats
                     if (pickupDefinition == null)
                     {
                         MelonLogger.Warning($"[CheatForDev] No box exists for product {definitionId}; deleting slot {i} instead.");
-                        productPlace.SetCountServer(0, null);
+                        EmptySlot(productPlace);
                         continue;
                     }
 
@@ -181,7 +180,7 @@ namespace CheatForDev.Cheats
                         return returned;
                     }
 
-                    productPlace.SetCountServer(0, null);
+                    EmptySlot(productPlace);
                     orders.CreateShelfPickup(pickupDefinition.Id, position, rotation, count, productId, null, null, null);
                     returned += count;
                 }
@@ -192,6 +191,19 @@ namespace CheatForDev.Cheats
                 MelonLogger.Error($"[CheatForDev] Returning a shelf to the delivery point failed: {ex}");
             }
             return returned;
+        }
+
+        // Empties one slot one item at a time. SetCountServer(0) looks simpler but cannot be called from here:
+        // its ProductTransferPayload parameter is a struct in the game, and the Il2CppInterop stub unboxes it
+        // unconditionally, so the null default it advertises throws before the game is ever reached.
+        // RemoveLastItemServer takes nothing and is the same path a customer taking the last item goes down.
+        // The loop is bounded by the starting count, so it does not depend on Count updating synchronously.
+        private static int EmptySlot(ProductPlace productPlace)
+        {
+            int start = productPlace.Count;
+            for (int n = 0; n < start; n++)
+                productPlace.RemoveLastItemServer();
+            return start;
         }
 
         public static void DropRandomItem(ShelfProducts shelf)

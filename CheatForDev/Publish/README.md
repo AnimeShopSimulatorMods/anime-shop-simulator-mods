@@ -98,5 +98,11 @@ WindowY = 24.0
 
 ## Changelog
 
+### 0.2.0
+- Fixed: "Delete its stock" and "Return to delivery" failed with a NullReferenceException and left the shelf untouched.
+- Shelves are now emptied the same way the game removes an item when a customer takes it.
+- The menu window can be dragged by its title bar, and remembers where you left it.
+- MelonLoader no longer skips the mod when the game reports a different name.
+
 ### 0.1.0
 - First release.

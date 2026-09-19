@@ -3,7 +3,8 @@ using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
 
 [assembly: MelonInfo(typeof(EmployeeOvertime.Main), EmployeeOvertime.ModInfo.Name, EmployeeOvertime.ModInfo.Version, EmployeeOvertime.ModInfo.Author, EmployeeOvertime.ModInfo.DownloadLink)]
-[assembly: MelonGame("OneMoreTime", "Anime Shop Simulator")]
+//[assembly: MelonGame("OneMoreTime", "Anime Shop Simulator")]
+//[assembly: MelonGame("OneMoreTime", "Anime Shop Simulator ")]
 [assembly: MelonColor(255, 255, 190, 90)]
 [assembly: MelonAuthorColor(255, 120, 200, 255)]
 
@@ -13,7 +14,7 @@ namespace EmployeeOvertime
     public static class ModInfo
     {
         public const string Name = "Employee Overtime";
-        public const string Version = "0.1.0";
+        public const string Version = "0.1.1";
         public const string Author = "1REDfriend";
         // Fill in the Nexus Mods page URL after the first upload, then rebuild.
         public const string DownloadLink = null;

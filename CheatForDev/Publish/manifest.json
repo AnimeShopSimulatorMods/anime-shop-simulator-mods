@@ -1,6 +1,6 @@
 {
   "name": "CheatForDev",
-  "version_number": "0.1.0",
+  "version_number": "0.2.0",
   "website_url": "",
   "description": "Anime Shop Simulator developer cheat menu: money, progression, time, shelves, free orders, licences and testing helpers. Requires MelonLoader 0.7.x.",
   "dependencies": []
