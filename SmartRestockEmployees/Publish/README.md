@@ -36,12 +36,52 @@ A MelonLoader mod for **Anime Shop Simulator** that makes your employees restock
 [SmartRestockEmployees]
 EmptyShelvesFirst = true
 KeepEmptySlotProduct = true
+FillFreeSlots = true
 StuckWatchdog = true
 StuckSeconds = 15.0
 VerboseLogs = false
+DiagnosticLogs = false
+PanelKey = "F7"
 ```
 
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `FillFreeSlots` | `true` | Let employees stock shelf slots that have never held anything. Turn it off to keep bare shelves bare across the whole store. |
+| `PanelKey` | `F7` | Opens the shelf panel. Any UnityEngine KeyCode name. |
+| `DiagnosticLogs` | `false` | Traces the game's own restock search step by step. Very noisy; for bug reports only. |
+
+Slots you set aside from the panel are listed in
+`UserData/SmartRestockEmployees/locked-shelves.txt`, one id per line. Delete a line to hand that slot
+back to your employees.
+
 ## Changelog
+
+### 1.4.0
+
+**Fixed: employees stopped restocking the whole store.** The mod judged whether a bare slot could
+take a product by its type alone, which is not the question the game asks — the game also checks
+whether the product physically fits. So the mod kept nominating slots the game then refused, and
+blacklisted each one for its own mistake until nothing was left to restock and every employee went
+idle. Bare slots are now left to the game, which knows how to fill them; the mod only steers slots
+that already hold a known product. It also can no longer starve the store: if its own filtering
+leaves nothing, it stands aside instead of waiting out a timer.
+
+**New: a shelf panel on F7.** Look at a shelf and press F7. It shows what is on the shelf, and gives
+you three things:
+
+- **Empty this shelf** — packs the stock back into boxes at delivery zone 1 or 2, your choice, and
+  sets the emptied slots aside so employees leave them alone.
+- **Forget** — for slots that are already empty. Clears the price tag and sets the slot aside. Your
+  price is not lost; prices belong to the product, so putting it back brings the price with it.
+- **Employees may fill bare shelves** — the store-wide switch, on by default, which is how the mod
+  has always behaved.
+
+Slots you set aside stay empty regardless of that switch. Stock one yourself and it is released
+automatically — no second trip to the panel. "See all" lists every shelf, and hovering a row lights
+up the real shelf, since shelves have no name you would recognise. The panel drags by its title bar
+and remembers where you left it.
+
+Thanks to **Limitlessandre** and **Th3DarkC1aw** on Nexus Mods, who asked for exactly this.
 
 ### 1.3.0
 - Fixed: employees kept topping up a single shelf slot while other shelves stayed completely empty.

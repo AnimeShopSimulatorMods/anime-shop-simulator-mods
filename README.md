@@ -14,8 +14,8 @@ Unity IL2CPP build.
 
 | Mod | What it does | Version |
 |---|---|---|
-| [**Smart Restock Employees**](SmartRestockEmployees/Publish/README.md) | Employees fill completely empty shelves first, never crowd the same slot, recover when stuck on a trash can, and store boxes on the least-filled storage rack. | 1.3.0 |
-| [**Cheat for Dev**](CheatForDev/Publish/README.md) | In-game cheat menu on **F8**: money and infinite money, shop and employee levels, pause and speed up time, clear shelves, free deliveries, unlock every licence, and testing tools. | 0.1.0 |
+| [**Smart Restock Employees**](SmartRestockEmployees/Publish/README.md) | Employees fill completely empty shelves first, never crowd the same slot, recover when stuck on a trash can, and store boxes on the least-filled storage rack. Shelf panel on **F7** to pack a shelf away or set slots aside. | 1.4.0 |
+| [**Cheat for Dev**](CheatForDev/Publish/README.md) | In-game cheat menu on **F8**: money and infinite money, shop and employee levels, pause and speed up time, clear shelves, free deliveries, unlock every licence, and testing tools. | 0.2.0 |
 | [**Employee Overtime**](EmployeeOvertime/Publish/README.md) | Keeps employees restocking, sorting storage and cleaning after the shop closes, until you end the day. | 0.1.0 |
 
 Each mod is a single DLL and works on its own. Install only the ones you want.
