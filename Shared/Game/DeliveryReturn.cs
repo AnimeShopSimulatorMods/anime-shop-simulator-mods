@@ -1,7 +1,9 @@
 using System;
+using Il2CppProject.Code.Core.Saves.SessionData;
 using Il2CppProject.Code.Gameplay.Configs;
 using Il2CppProject.Code.Gameplay.Controllers;
 using Il2CppProject.Code.Gameplay.Interactions.Shelfs;
+using Il2CppProject.Code.Gameplay.Player.Pickups;
 using Il2CppProject.Code.Gameplay.Player.Products;
 using MelonLoader;
 using UnityEngine;
@@ -80,8 +82,9 @@ namespace AnimeShopMods.Game
                     }
 
                     Empty(productPlace);
-                    orders.CreateShelfPickup(pickupDefinition.Id, position, rotation, count,
+                    var pickup = orders.CreateShelfPickup(pickupDefinition.Id, position, rotation, count,
                         productId, null, null, null);
+                    Persist(orders, pickup, pickupDefinition.Id, count, productId, position, rotation);
 
                     result.Returned += count;
                     stackIndex++;
@@ -92,6 +95,48 @@ namespace AnimeShopMods.Game
                 MelonLogger.Error($"[DeliveryReturn] Returning a shelf failed: {ex}");
             }
             return result;
+        }
+
+        // CreateShelfPickup is the game's save-restore path -- note its RollbackShelfPickupRestore
+        // sibling -- so it builds the box but never gives it save data. A box made that way looks
+        // right, can be picked up, and is gone the next time the player loads. Attaching an
+        // OrderSaveData and registering it is what a real order gets.
+        //
+        // _pickups and _orderSaveDatas are separate registries with their own add/remove pairs, so
+        // both are needed. The Contains check is there in case RegisterOrderPickup already did the
+        // second half: a duplicate entry would restore the same box twice.
+        private static void Persist(OrderController orders, Pickup pickup, int definitionId, int count,
+            Il2CppSystem.Guid productId, Vector3 position, Quaternion rotation)
+        {
+            if (pickup == null) return;
+
+            try
+            {
+                if (pickup.orderSaveData != null) return;
+
+                var saveData = new OrderSaveData
+                {
+                    Id = definitionId,
+                    Count = count,
+                    ProductId = productId,
+                    Position = position,
+                    Rotation = rotation,
+                    IsDroppedPickup = false,
+                };
+
+                pickup.SetOrderSaveData(saveData);
+                orders.RegisterOrderPickup(pickup);
+
+                var saves = orders._orderSaveDatas;
+                if (saves == null || !saves.Contains(saveData))
+                    orders.AddOrderSave(saveData);
+
+                pickup.UpdateSavePosition();
+            }
+            catch (Exception ex)
+            {
+                MelonLogger.Error($"[DeliveryReturn] Could not make a returned box persist: {ex}");
+            }
         }
 
         public static bool HasSecondZone(OrderController orders)

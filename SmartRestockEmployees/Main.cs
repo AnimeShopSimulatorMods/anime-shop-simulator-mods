@@ -96,13 +96,19 @@ namespace SmartRestockEmployees
             ShelfPanel.Reset();
         }
 
+        // The frame the capability survey owns. Nothing else is drawn during it.
+        private static int _surveyFrame = -1;
+
         public override void OnGUI()
         {
             if (!PanelVisible) return;
 
-            // The survey owns its whole frame and draws nothing else. IMGUI matches controls between
-            // the layout and repaint passes and throws if the set differs between them.
-            if (!GuiCaps.Surveyed)
+            // The survey owns a whole frame, not merely its first pass. IMGUI matches controls between
+            // the layout and repaint passes and throws if they differ, and GuiCaps.Surveyed flips on
+            // the first pass -- gating on that alone draws the survey at Layout and the panel at
+            // Repaint, which is exactly the mismatch it is meant to avoid.
+            if (_surveyFrame < 0) _surveyFrame = Time.frameCount;
+            if (Time.frameCount == _surveyFrame)
             {
                 GuiCaps.Survey();
                 return;
@@ -122,6 +128,7 @@ namespace SmartRestockEmployees
 
             GameLinks.Reset();
             GuiCaps.Reset();
+            _surveyFrame = -1;
             Skin.Reset();
             CursorControl.Reset();
             SetPanelVisible(false);
