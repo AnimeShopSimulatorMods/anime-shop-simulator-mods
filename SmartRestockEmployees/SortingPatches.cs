@@ -312,6 +312,7 @@ namespace SmartRestockEmployees
                     {
                         var place = places[p];
                         if (place == null || place.IsLocked || !place.HavePoints) continue;
+                        if (ShelfLocks.IsLocked(place)) continue;
                         if (TargetBlacklist.Contains(place.Pointer)) continue;
                         if (busy.Contains(place.Pointer)) continue;
                         if (TargetClaims.HeldByOther(place.Pointer, self)) continue;
@@ -495,6 +496,12 @@ namespace SmartRestockEmployees
 
         private static bool Allows(SearchContext context, ProductPricePlace place)
         {
+            // A shelf the player set to stay empty is closed to employees whatever else is true. This
+            // sits inside the search context on purpose: outside one, HavePoints is the game asking
+            // on someone else's behalf -- including the player's own hands -- and a locked shelf must
+            // still accept stock the player puts there themselves.
+            if (ShelfLocks.IsLocked(place)) return false;
+
             if (context.Kind == SearchContext.SearchKind.FindShelf && context.TargetPlace != IntPtr.Zero)
                 return place.Pointer == context.TargetPlace;
 

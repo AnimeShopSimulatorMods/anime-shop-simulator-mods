@@ -47,6 +47,7 @@ namespace SmartRestockEmployees.Ui
         private static float _nextScan;
         private static bool _isServer;
         private static bool _hasSecondZone;
+        private static bool _shelfLocked;
 
         public static void Reset()
         {
@@ -116,6 +117,7 @@ namespace SmartRestockEmployees.Ui
 
                 var shelf = _pinned != null ? _pinned : ShelfFinder.UnderCrosshair();
                 _shelf = shelf == null ? null : ShelfFinder.Describe(shelf, GameLinks.Products);
+                _shelfLocked = shelf != null && ShelfLocks.IsShelfLocked(shelf);
 
                 if (_listView && (_shelves == null || Time.realtimeSinceStartup > _nextScan))
                 {
@@ -254,25 +256,36 @@ namespace SmartRestockEmployees.Ui
                 : "The second delivery zone is not open yet, so items will go to Delivery 1.", Skin.Hint);
 
             GUILayout.Space(12f);
-            // Honest about its own limit: forgetting takes the tag off and stops this mod reserving
-            // the shelf, but the store-wide switch below still decides whether the game refills it.
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            GUILayout.Label("Forget this shelf", Skin.Body);
-            GUILayout.Label(Main.FillFreeSlots
-                ? "Clears its price tag. Employees may still fill it while the switch below says Yes."
-                : "Clears its price tag and leaves the shelf alone.", Skin.Hint);
+            GUILayout.Label("Keep this shelf empty", Skin.Body);
+            GUILayout.Label(_shelfLocked
+                ? "Employees leave this shelf alone. You can still stock it yourself."
+                : "Clears its price tag and takes it off the employees' round.", Skin.Hint);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Forget", Skin.Secondary, GUILayout.Width(96f)))
+
+            if (_shelfLocked)
+            {
+                if (GUILayout.Button("Allow", Skin.Secondary, GUILayout.Width(96f)))
+                {
+                    var shelf = entry.Shelf;
+                    Queue(() =>
+                    {
+                        ShelfLocks.Unlock(shelf);
+                        _status = "Employees may use this shelf again.";
+                        _shelves = null;
+                    });
+                }
+            }
+            else if (GUILayout.Button("Forget", Skin.Secondary, GUILayout.Width(96f)))
             {
                 var shelf = entry.Shelf;
                 Queue(() =>
                 {
-                    int cleared = ShelfMemory.Clear(shelf);
-                    _status = cleared > 0
-                        ? "Employees will leave this shelf alone."
-                        : "This shelf was already forgotten.";
+                    ShelfMemory.Clear(shelf);
+                    ShelfLocks.Lock(shelf);
+                    _status = "Employees will leave this shelf alone.";
                     _shelves = null;
                 });
             }

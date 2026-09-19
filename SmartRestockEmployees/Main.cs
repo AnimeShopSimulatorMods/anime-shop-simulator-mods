@@ -71,6 +71,8 @@ namespace SmartRestockEmployees
                 System.Enum.TryParse<KeyCode>(_panelKey.Value, true, out var parsed))
                 PanelKey = parsed;
 
+            ShelfLocks.Load();
+
             MelonLogger.Msg($"{ModInfo.Name} {ModInfo.Version} loaded. Press {PanelKey} for the shelf panel.");
         }
 
