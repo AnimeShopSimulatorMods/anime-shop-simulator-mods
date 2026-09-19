@@ -1,7 +1,0 @@
-{
-  "name": "SmartRestockEmployees",
-  "version_number": "1.4.0",
-  "website_url": "",
-  "description": "Anime Shop Simulator: employees fill completely empty shelves first, never crowd the same slot, and store boxes on the least-filled rack. Requires MelonLoader 0.7.x.",
-  "dependencies": []
-}

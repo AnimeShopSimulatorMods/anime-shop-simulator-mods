@@ -96,7 +96,7 @@ Directory.Build.props       shared references and build settings
 SmartRestockEmployees/      Harmony patches on the sorting and storage employee AI
 EmployeeOvertime/           day-end hooks that keep employees working
 CheatForDev/                IMGUI cheat menu and the game-facing cheat actions
-tools/pack.ps1              builds a mod and zips it for Nexus Mods / Thunderstore
+tools/pack.ps1              builds a mod and zips it for Nexus Mods
 ```
 
 ## Notes for modders

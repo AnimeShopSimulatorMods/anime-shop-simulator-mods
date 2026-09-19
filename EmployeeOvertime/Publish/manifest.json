@@ -1,7 +1,0 @@
-{
-  "name": "EmployeeOvertime",
-  "version_number": "0.1.0",
-  "website_url": "",
-  "description": "Anime Shop Simulator: employees keep working after the store closes, restocking and cleaning until you end the day. Requires MelonLoader 0.7.x.",
-  "dependencies": []
-}
