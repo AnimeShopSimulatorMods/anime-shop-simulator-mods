@@ -33,7 +33,11 @@ who wants to skip the grind. Press **F8** in game to open it.
 
 ### Orders
 - Browse every box in the game and spawn 1 to 200 of them straight onto the delivery point.
-- No basket, no payment, no storage limit.
+- **Genuinely free.** Boxes are created directly rather than ordered, so nothing is validated against
+  what the shop currently sells and nothing is charged.
+- Every entry shows its internal id, which is what to quote if one of them misbehaves.
+- **Clear up** — remove the selected product, every loose box, or unopened furniture crates. Quest
+  deliveries, boxes already on shelves, and anything built into your shop are never touched.
 
 ### Testing helpers
 - Turn customers off entirely, or send everyone home — useful for watching employee AI undisturbed.
@@ -107,6 +111,23 @@ WindowY = 24.0
 - `WindowX` / `WindowY` — updated automatically whenever you drag the window.
 
 ## Changelog
+
+### 0.5.0
+- Fixed: the spawn buttons never appeared for some products, so they could be selected but never
+  ordered. The menu decided whether anything was selected by testing the product id for being zero or
+  above, and the game's ids are not all positive. Reported against Bald Justice Manga, which has a
+  negative one, while Booster Big Box Common does not.
+- Fixed: free delivery was neither free nor reliable. It went through the game's own ordering path,
+  which validates the order against what the shop currently sells - rejecting anything else, silently -
+  and debits the wallet on the way through. Boxes are created straight onto the delivery point now,
+  which skips both. Nobody walked to the computer and paid for these.
+- Fixed: the log claimed every spawn succeeded, because it was written after the request rather than
+  after checking the result. It now reports how many boxes were actually placed, and says so when that
+  is fewer than asked for.
+- Added: **Clear up**, in the Orders tab. Two hundred boxes arrive on one click and used to have to be
+  carried away one at a time. Clear the selected product, every loose box, or unopened furniture crates.
+- Every entry in the Orders list now shows its internal id, so a product that misbehaves can be named
+  exactly rather than described.
 
 ### 0.4.0
 - Fixed: **skip to the next day** never moved the day counter. It winds the clock round to the next

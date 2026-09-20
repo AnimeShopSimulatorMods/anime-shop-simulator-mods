@@ -48,10 +48,15 @@ namespace CheatForDev.Ui
         // Unlocks
         private static bool _confirmSkipTutorial;
 
-        // Orders
-        private static int _selectedBoxId = -1;
+        // Orders. Whether something is selected is tracked separately from its id, because the game's
+        // definition ids are not all positive and using "id >= 0" as the test quietly left the spawn
+        // buttons hidden for every product that happened to carry a negative one.
+        private static bool _hasBoxSelection;
+        private static int _selectedBoxId;
         private static string _selectedBoxLabel = "(none)";
         private static int _catalogPage;
+        private static bool _confirmClearBoxes;
+        private static bool _confirmClearCrates;
 
         // The frame the capability survey owns. Nothing else is drawn during it.
         private static int _surveyFrame = -1;
@@ -122,6 +127,10 @@ namespace CheatForDev.Ui
             _selectedShelves.Clear();
             _aimMode = false;
             _confirmSkipTutorial = false;
+            _hasBoxSelection = false;
+            _selectedBoxLabel = "(none)";
+            _confirmClearBoxes = false;
+            _confirmClearCrates = false;
             _catalogPage = 0;
             _licenses = null;
             _reportedFailures.Clear();
@@ -467,7 +476,7 @@ namespace CheatForDev.Ui
             Controls.Label("Boxes are spawned straight onto the delivery point. No basket, no payment.");
             Controls.Label($"Selected: {_selectedBoxLabel}");
 
-            if (_selectedBoxId >= 0)
+            if (_hasBoxSelection)
             {
                 Controls.BeginRow();
                 foreach (int count in new[] { 1, 5, 10, 25, 50, 100, OrderCheats.MaxPerBurst })
@@ -475,6 +484,13 @@ namespace CheatForDev.Ui
                         OrderCheats.Spawn(_selectedBoxId, count);
                 Controls.EndRow();
             }
+            else
+            {
+                Controls.Label("Pick a box from the list below, then choose how many.");
+            }
+
+            Controls.Space(10f);
+            DrawBoxCleanup();
 
             Controls.Space();
             var catalog = OrderCheats.Catalog();
@@ -501,7 +517,60 @@ namespace CheatForDev.Ui
                 if (!Controls.Button(box.Label)) continue;
                 _selectedBoxId = box.Id;
                 _selectedBoxLabel = box.Label;
+                _hasBoxSelection = true;
             }
+        }
+
+        // Two hundred boxes arrive on one click, so getting rid of them should not need two hundred more.
+        // Clearing everything asks twice; clearing just the selected type does not, because it is the
+        // narrow one you reach for right after spawning the wrong thing.
+        private static void DrawBoxCleanup()
+        {
+            Controls.Header("Clear up");
+            Controls.Label($"Loose product boxes: {OrderCheats.LooseBoxCount()}");
+            Controls.Label("Quest deliveries and boxes already on shelves are left alone.");
+
+            Controls.BeginRow();
+            if (_hasBoxSelection && Controls.Button("Clear the selected type", 210f))
+                OrderCheats.ClearOfType(_selectedBoxId);
+
+            if (!_confirmClearBoxes)
+            {
+                if (Controls.Button("Clear every loose box", 200f)) _confirmClearBoxes = true;
+            }
+            else
+            {
+                if (Controls.Button("Yes, clear them", 160f))
+                {
+                    OrderCheats.ClearAll();
+                    _confirmClearBoxes = false;
+                }
+                if (Controls.Button("Cancel", 100f)) _confirmClearBoxes = false;
+            }
+            Controls.EndRow();
+
+            // Kept apart from the boxes above, because a crate and a built shelf are the same kind of
+            // thing to the game and only the delivery list tells them apart.
+            Controls.Space(6f);
+            Controls.Label($"Unopened furniture crates: {OrderCheats.FurnitureCrateCount()}");
+            Controls.Label("Only crates still waiting on the delivery list. Anything already built into " +
+                           "the shop is never touched.");
+
+            Controls.BeginRow();
+            if (!_confirmClearCrates)
+            {
+                if (Controls.Button("Clear furniture crates", 210f)) _confirmClearCrates = true;
+            }
+            else
+            {
+                if (Controls.Button("Yes, clear the crates", 190f))
+                {
+                    OrderCheats.ClearFurnitureCrates();
+                    _confirmClearCrates = false;
+                }
+                if (Controls.Button("Cancel", 100f)) _confirmClearCrates = false;
+            }
+            Controls.EndRow();
         }
 
         // --------------------------------------------------------------- testing

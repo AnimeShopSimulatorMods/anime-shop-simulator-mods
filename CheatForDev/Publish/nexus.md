@@ -10,16 +10,22 @@ Nexus renders both as BBCode. Paste them as-is.
 Shown under the file name on the Files tab. Keep it to what changed and how to install.
 
 ```
-Version 0.4.0 - built against Anime Shop Simulator 1.0.5, needs MelonLoader 0.7.x.
+Version 0.5.0 - built against Anime Shop Simulator 1.0.5, needs MelonLoader 0.7.x.
 
 Extract into your game folder. The zip already contains Mods\CheatForDev.dll, so it lands in the right place. Launch the game, load a save, press F8.
 
 New in this version:
+- Clear up, in the Orders tab. Remove the selected product, every loose box, or unopened furniture crates. Your shelves, tills and anything else you built are never touched.
+
+Fixed in this version:
+- Some products could be picked in Orders but had no spawn buttons, so there was no way to order them. Thanks to Akainu30 for the report and the screenshots.
+- Free delivery was neither free nor reliable: it went through the game's own ordering path, which quietly rejected anything the shop does not currently sell, and charged you for the rest. Boxes are created directly now.
+
+Still in from 0.4.0:
 - Skip the whole tutorial in one click, and get everything it would have handed you along the way: the tools, the crystal shop, the clothes shop and the second floor.
 - Open the clothes shop and the second floor on their own, if you would rather not skip the tutorial.
 - Unlock every tool (mop, trash bag, decor kit, bat) and have it survive a restart.
 
-Fixed in this version:
 - Skip to the next day never moved the day counter, so ten presses still left you on day one. Worth knowing: the quest system schedules by that counter, so with it stuck nothing dated ever came due.
 - The Crystals buttons did nothing. They work now.
 - Tournament wins did nothing. It works now.
@@ -74,6 +80,8 @@ It was written to test other mods, so it leans towards things a developer needs 
 [b]Orders[/b]
 [list]
 [*]Browse every box in the game and spawn 1 to 200 of them straight onto the delivery point. No basket, no payment, no storage limit.
+[*][b]Genuinely free.[/b] Boxes are created directly rather than ordered, so nothing is checked against what your shop currently sells and nothing is charged.
+[*][b]Clear up[/b] - remove the selected product, every loose box, or unopened furniture crates. Quest deliveries, boxes already on shelves, and anything built into your shop are never touched.
 [/list]
 
 [b]Testing helpers[/b]
@@ -148,6 +156,15 @@ VerboseLogs = false
 [/list]
 
 [size=4][b]Changelog[/b][/size]
+
+[b]0.5.0[/b]
+[list]
+[*]Fixed: some products could be selected in Orders but showed no spawn buttons, so there was no way to order them. The menu worked out whether anything was selected by testing the product id for being zero or above, and the game's ids are not all positive.
+[*]Fixed: free delivery was neither free nor reliable. It went through the game's own ordering path, which validates the order against what the shop currently sells and rejects anything else without saying so, and debits the wallet on the way through. Boxes are created straight onto the delivery point now, which skips both.
+[*]Fixed: the log claimed every spawn worked, because it was written before anything checked the result.
+[*]Added: Clear up, in the Orders tab - remove the selected product, every loose box, or unopened furniture crates.
+[*]Every entry in the Orders list now shows its internal id, so anything that misbehaves can be named exactly.
+[/list]
 
 [b]0.4.0[/b]
 [list]
