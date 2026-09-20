@@ -1,22 +1,22 @@
-# Nexus Mods upload copy — Cheat for Dev
+# Nexus Mods upload copy - Cheat for Dev
 
 Two blocks, kept here so they are updated in the same commit as the release they describe.
 Nexus renders both as BBCode. Paste them as-is.
 
 ---
 
-## File options — "File Description"
+## File options - "File Description"
 
 Shown under the file name on the Files tab. Keep it to what changed and how to install.
 
 ```
-Version 0.3.0 — built against Anime Shop Simulator 1.0.5, needs MelonLoader 0.7.x.
+Version 0.3.0 - built against Anime Shop Simulator 1.0.5, needs MelonLoader 0.7.x.
 
 Extract into your game folder. The zip already contains Mods\CheatForDev.dll, so it lands in the right place. Launch the game, load a save, press F8.
 
 New in this version:
 - Skip the whole tutorial in one click, and get the tools and the crystal shop it would have handed you.
-- Unlock every tool — mop, trash bag, decor kit, bat — and have it survive a restart.
+- Unlock every tool (mop, trash bag, decor kit, bat) and have it survive a restart.
 - Open the crystal shop.
 
 Fixed in this version:
@@ -29,21 +29,21 @@ Upgrading from 0.2.0 or 0.1.0: replace the old DLL. Your settings and saves are 
 
 ---
 
-## Mod page — "Description"
+## Mod page - "Description"
 
 ```
 [size=5][b]Cheat for Dev[/b][/size]
 
 A cheat and debug menu for Anime Shop Simulator. Press [b]F8[/b] in game to open it.
 
-It was written to test other mods, so it leans towards things a developer needs — spawn this customer, empty that shelf, freeze the clock — but it does the ordinary cheats too. Take what you want from it.
+It was written to test other mods, so it leans towards things a developer needs - spawn this customer, empty that shelf, freeze the clock - but it does the ordinary cheats too. Take what you want from it.
 
 [size=4][b]What it does[/b][/size]
 
 [b]Money and progression[/b]
 [list]
 [*]Set money with buttons, or jump straight to 0 / 10k / 100k / 1M / 10M.
-[*][b]Infinite money[/b] — the wallet tops itself back up once it drops below half your target, so ordinary spending still shows on screen instead of the number snapping back.
+[*][b]Infinite money[/b] - the wallet tops itself back up once it drops below half your target, so ordinary spending still shows on screen instead of the number snapping back.
 [*]Crystals, shop experience, shop level, the day counter and tournament wins.
 [/list]
 
@@ -65,7 +65,7 @@ It was written to test other mods, so it leans towards things a developer needs 
 [b]Shelves[/b]
 [list]
 [*]Every sales shelf listed with its product and item count. Tick the ones you want.
-[*][b]Aim mode[/b] — look at a shelf in game and act on it directly, no list needed.
+[*][b]Aim mode[/b] - look at a shelf in game and act on it directly, no list needed.
 [*]Two ways to empty a shelf, kept deliberately apart: [b]delete its stock[/b], or [b]return it to delivery[/b] as boxes you can restock from.
 [*]Drop a single item on the floor, for testing cleaning staff.
 [/list]
@@ -77,7 +77,7 @@ It was written to test other mods, so it leans towards things a developer needs 
 
 [b]Testing helpers[/b]
 [list]
-[*]Turn customers off entirely, or send everyone home — useful for watching employee AI undisturbed.
+[*]Turn customers off entirely, or send everyone home - useful for watching employee AI undisturbed.
 [*]Spawn one customer of any type, including the thief and the shoplifter.
 [*]Clean the whole shop.
 [*]Teleport to the delivery point.
@@ -85,9 +85,9 @@ It was written to test other mods, so it leans towards things a developer needs 
 
 [b]Unlocks[/b]
 [list]
-[*][b]Skip the whole tutorial[/b] — finishes every step, marks every popup as seen, and grants what the tutorial hands out along the way, so you are not left without a mop or anywhere to spend crystals.
-[*][b]Unlock every tool[/b] — mop, trash bag, decor kit and bat.
-[*][b]Open the crystal shop[/b] — the stand that sells special packs for crystals.
+[*][b]Skip the whole tutorial[/b] - finishes every step, marks every popup as seen, and grants what the tutorial hands out along the way, so you are not left without a mop or anywhere to spend crystals.
+[*][b]Unlock every tool[/b] - mop, trash bag, decor kit and bat.
+[*][b]Open the crystal shop[/b] - the stand that sells special packs for crystals.
 [*]Unlock every licence at once, or one at a time.
 [*]Buy the next store or storage upgrade, and see what you owe in bills and rent.
 [*]If the developers' own cheat panel is still in your build, buttons appear to open all cards, spawn debug buildings and show their panel.
@@ -138,9 +138,9 @@ VerboseLogs = false
 [/code]
 
 [list]
-[*][b]ToggleKey[/b] — any UnityEngine.KeyCode name.
-[*][b]RunProbe[/b] — logs a survey of the game's cheat-related objects once per session. Worth leaving on after a game update; it is how you find out whether something moved.
-[*][b]VerboseLogs[/b] — logs every action the menu takes, and what the game actually stored afterwards. [b]Turn this on before reporting anything that looks like it does nothing[/b] — it answers the question in one line.
+[*][b]ToggleKey[/b] - any UnityEngine.KeyCode name.
+[*][b]RunProbe[/b] - logs a survey of the game's cheat-related objects once per session. Worth leaving on after a game update; it is how you find out whether something moved.
+[*][b]VerboseLogs[/b] - logs every action the menu takes, and what the game actually stored afterwards. [b]Turn this on before reporting anything that looks like it does nothing[/b] - it answers the question in one line.
 [/list]
 
 [size=4][b]Changelog[/b][/size]
