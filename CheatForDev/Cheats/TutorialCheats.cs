@@ -104,12 +104,15 @@ namespace CheatForDev.Cheats
                 SkipSteps(controller, total);
                 SkipPopups(controller);
 
-                // Everything the tutorial hands out on the way through is gated by the quest controller
-                // rather than by the tutorial itself: the tools, and the crystal shop. Skipping past the
-                // steps that would have granted them leaves a player who has "finished" the tutorial
-                // without a mop and without anywhere to spend crystals, so grant them here.
+                // Everything the tutorial opens up on the way through is gated by the quest controller
+                // rather than by the tutorial itself: the tools, the crystal shop, the clothes shop and
+                // the second floor. Skipping past the steps that would have granted them leaves a player
+                // who has "finished" the tutorial with no mop, nowhere to spend crystals and a locked
+                // upstairs, so grant the lot here.
                 UnlockCheats.UnlockInventoryTools();
                 UnlockCheats.UnlockSpecialShop();
+                UnlockCheats.OpenOutfitShop();
+                UnlockCheats.OpenSecondFloor();
 
                 // The tutorial writes into the save through its own controller, so persist it here rather
                 // than leaving the skip to be undone by the next load.

@@ -10,21 +10,22 @@ Nexus renders both as BBCode. Paste them as-is.
 Shown under the file name on the Files tab. Keep it to what changed and how to install.
 
 ```
-Version 0.3.0 - built against Anime Shop Simulator 1.0.5, needs MelonLoader 0.7.x.
+Version 0.4.0 - built against Anime Shop Simulator 1.0.5, needs MelonLoader 0.7.x.
 
 Extract into your game folder. The zip already contains Mods\CheatForDev.dll, so it lands in the right place. Launch the game, load a save, press F8.
 
 New in this version:
-- Skip the whole tutorial in one click, and get the tools and the crystal shop it would have handed you.
+- Skip the whole tutorial in one click, and get everything it would have handed you along the way: the tools, the crystal shop, the clothes shop and the second floor.
+- Open the clothes shop and the second floor on their own, if you would rather not skip the tutorial.
 - Unlock every tool (mop, trash bag, decor kit, bat) and have it survive a restart.
-- Open the crystal shop.
 
 Fixed in this version:
+- Skip to the next day never moved the day counter, so ten presses still left you on day one. Worth knowing: the quest system schedules by that counter, so with it stuck nothing dated ever came due.
 - The Crystals buttons did nothing. They work now.
 - Tournament wins did nothing. It works now.
 - Unlocking the inventory tools was forgotten when you quit the game. It is saved now.
 
-Upgrading from 0.2.0 or 0.1.0: replace the old DLL. Your settings and saves are kept. If an older version left a stray crystal or tournament-win value behind, the mod now points it out in the log; it is inert and can be ignored.
+Upgrading from an earlier version: replace the old DLL. Your settings and saves are kept. If an older version left a stray crystal or tournament-win value behind, the mod now points it out in the log; it is inert and can be ignored.
 ```
 
 ---
@@ -59,7 +60,7 @@ It was written to test other mods, so it leans towards things a developer needs 
 [*]Pause and resume the clock.
 [*]Jump to any time of day. Opening hours are read from the game, so the value is clamped to the real trading day rather than a guess.
 [*]Time speed from frozen to 20x.
-[*]End the day now, or skip to the next one.
+[*]End the day now, or skip to the next one. Skipping advances the day counter, which the quest system schedules against.
 [/list]
 
 [b]Shelves[/b]
@@ -85,9 +86,11 @@ It was written to test other mods, so it leans towards things a developer needs 
 
 [b]Unlocks[/b]
 [list]
-[*][b]Skip the whole tutorial[/b] - finishes every step, marks every popup as seen, and grants what the tutorial hands out along the way, so you are not left without a mop or anywhere to spend crystals.
+[*][b]Skip the whole tutorial[/b] - finishes every step, marks every popup as seen, and opens everything the tutorial hands out along the way, so you are not left without a mop, with crystals you cannot spend, or locked out of half the building.
 [*][b]Unlock every tool[/b] - mop, trash bag, decor kit and bat.
 [*][b]Open the crystal shop[/b] - the stand that sells special packs for crystals.
+[*][b]Open the clothes shop[/b] - the outfit stand, which the game holds shut until a set day.
+[*][b]Open the second floor[/b] - the upstairs room. This one moves quest progress past the quest that grants it, so every quest before that counts as done.
 [*]Unlock every licence at once, or one at a time.
 [*]Buy the next store or storage upgrade, and see what you owe in bills and rent.
 [*]If the developers' own cheat panel is still in your build, buttons appear to open all cards, spawn debug buildings and show their panel.
@@ -123,6 +126,7 @@ Drag the window by its title bar. It remembers where you left it.
 [list]
 [*]Setting level or day far outside their normal progression can corrupt a save. [b]Back your save up first.[/b]
 [*]Skipping the tutorial is written to the save and cannot be undone. It asks for a second click before it does anything.
+[*]Opening the second floor moves quest progress forward, so every quest before the one that grants it counts as done.
 [*]Spawning hundreds of boxes at once will litter the delivery area.
 [/list]
 
@@ -145,10 +149,18 @@ VerboseLogs = false
 
 [size=4][b]Changelog[/b][/size]
 
+[b]0.4.0[/b]
+[list]
+[*]Fixed: skip to the next day never moved the day counter. The clock wound round to the next morning, but the counter is raised by the end-of-day sequence the button skips, so ten presses still left you where you started. It matters more than the number on screen: the quest system schedules by that counter, so with it stuck nothing dated could come due.
+[*]Added: open the clothes shop. The outfit stand is held shut until a set day rather than by a flag, so this brings that day forward.
+[*]Added: open the second floor. The upstairs room opens on finishing the quest that grants it, so this moves quest progress past that quest - which means every quest before it then counts as done. The menu and the log both say so first.
+[*]Skipping the tutorial now opens the clothes shop and the second floor too.
+[/list]
+
 [b]0.3.0[/b]
 [list]
 [*]Added: skip the whole tutorial, in the Unlocks tab. It also unlocks the tools and the crystal shop, which the tutorial would otherwise have handed you on the way through.
-[*]Added: open the crystal shop on its own. The special-pack stand stays hidden until a quest opens it, which a skipped tutorial never reaches, leaving crystals with nowhere to go.
+[*]Added: open the crystal shop on its own. The special-pack stand stays hidden until a quest opens it, leaving crystals with nowhere to go.
 [*]Fixed: every button in the Crystals section did nothing. Crystals are kept per player rather than in the table the rest of that tab uses, so the mod was writing somewhere the game never reads.
 [*]Fixed: tournament wins did nothing, for the same reason.
 [*]Fixed: unlocking the inventory tools was gone after restarting the game. It used the game's own cheat, which is a session-only flag nothing saves. The real unlock is saved, and that is what the button does now.

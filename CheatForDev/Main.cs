@@ -16,7 +16,7 @@ namespace CheatForDev
     public static class ModInfo
     {
         public const string Name = "Cheat for Dev";
-        public const string Version = "0.3.0";
+        public const string Version = "0.4.0";
         public const string Author = "1REDfriend";
         public const string DownloadLink = null;
         public const string Description =

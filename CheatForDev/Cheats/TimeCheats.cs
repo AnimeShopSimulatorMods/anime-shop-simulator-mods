@@ -1,5 +1,7 @@
 using System;
+using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
+using UnityEngine;
 
 namespace CheatForDev.Cheats
 {
@@ -169,13 +171,26 @@ namespace CheatForDev.Cheats
             }
         }
 
+        // SetNextDay() only winds the clock round to the next morning. The day counter is a separate
+        // value that the game raises as part of its end-of-day sequence, which this button skips, so
+        // pressing it used to leave the counter where it was - ten presses, still day zero. That matters
+        // well beyond the number on screen: the quest system reads the counter, so anything scheduled
+        // for a later day, the clothes shop included, could never come due.
         public static void NextDay()
         {
             if (!Guard()) return;
             try
             {
+                float before = ProgressCheats.Get(ParameterType.Day);
                 GameAccess.Time.SetNextDay();
-                Main.Log("[CheatForDev] Skipped to the next day.");
+                ProgressCheats.Add(ParameterType.Day, 1f);
+                float after = ProgressCheats.Get(ParameterType.Day);
+
+                Main.Log($"[CheatForDev] Skipped to the next day (day counter {before} -> {after}).");
+
+                if (Mathf.Approximately(before, after))
+                    MelonLogger.Warning("[CheatForDev] The clock moved on but the day counter did not. " +
+                                        "Anything the game schedules by day will stay where it was.");
             }
             catch (Exception ex)
             {

@@ -20,7 +20,8 @@ who wants to skip the grind. Press **F8** in game to open it.
 - Jump to any time of day. Shop opening hours are read from the game, so the value is clamped to the
   real trading day instead of a hard-coded guess.
 - Time speed from frozen to 20x.
-- End the day now, or skip to the next one.
+- End the day now, or skip to the next one. Skipping advances the day counter, which the quest system
+  schedules against, so anything dated still comes due.
 
 ### Shelves
 - List every sales shelf with its product and item count, tick the ones you want.
@@ -42,10 +43,14 @@ who wants to skip the grind. Press **F8** in game to open it.
 
 ### Unlocks
 - **Unlock every tool** — mop, trash bag, decor kit and bat, written to the save so they survive a restart.
-- **Open the crystal shop** — the stand that sells special packs for crystals. Also saved.
-- **Skip the whole tutorial** — finishes every tutorial step, marks every popup as seen, and grants what
-  the tutorial would have handed you along the way: the tools and the crystal shop. Takes a second click
-  to confirm, because it is saved and has no undo.
+- **Open the crystal shop** — the stand that sells special packs for crystals.
+- **Open the clothes shop** — the outfit stand, which the game holds shut until a set day rather than
+  by a flag, so this brings that day forward.
+- **Open the second floor** — the upstairs room. This one moves quest progress past the quest that
+  grants it, so every quest before that counts as done. All three are written to the save.
+- **Skip the whole tutorial** — finishes every tutorial step, marks every popup as seen, and opens up
+  everything the tutorial would have given you along the way: the tools, the crystal shop, the clothes
+  shop and the second floor. Takes a second click to confirm, because it is saved and has no undo.
 - **Unlock every licence** at once, or one at a time from a list.
 - Buy the next store or storage upgrade.
 - See outstanding bills and rent.
@@ -103,6 +108,22 @@ WindowY = 24.0
 
 ## Changelog
 
+### 0.4.0
+- Fixed: **skip to the next day** never moved the day counter. It winds the clock round to the next
+  morning, but the counter is raised by the end-of-day sequence that the button skips, so ten presses
+  still left you on day zero. It now advances the counter too.
+  This was not only a wrong number on screen. The quest system schedules by that counter, so with it
+  stuck at zero nothing dated could ever come due - which is why the clothes shop below could not be
+  opened at all until this was fixed.
+- Added: **Open the clothes shop**, in the Unlocks tab. The outfit stand is held shut until a set day
+  rather than by a flag, so this brings that day forward, and moves the day counter to 1 first on a save
+  still sitting on day zero.
+- Added: **Open the second floor**, in the Unlocks tab. The upstairs room opens on finishing the quest
+  that grants it, so this moves quest progress past that quest. It is the blunt one: every quest before
+  it then counts as done. The menu and the log both say so before you use it.
+- **Skip the whole tutorial** now opens the clothes shop and the second floor as well, so a skipped
+  tutorial no longer leaves you locked out of half the building.
+
 ### 0.3.0
 - Fixed: **Unlock inventory tools** was gone after restarting the game. It called the game's own cheat,
   which is a session-only flag that is never written to the save. The tools are really gated by four
@@ -111,9 +132,8 @@ WindowY = 24.0
 - Added: **Open the crystal shop**, in the Unlocks tab. The special-pack stand is hidden until a quest
   opens it, which a skipped tutorial never reaches, leaving crystals with nowhere to be spent.
 - Added: **Skip the whole tutorial**, in the Unlocks tab. It finishes the step tutorial, marks every
-  one-off popup as seen, and grants what the tutorial would have handed you on the way through - the
-  tools and the crystal shop - so a skipped tutorial does not leave you without a mop or a shop.
-  Two clicks, because it is saved and cannot be undone.
+  one-off popup as seen, and grants the tools and the crystal shop the tutorial would have handed you
+  on the way through. Two clicks, because it is saved and cannot be undone.
 - Fixed: every button in the **Crystals** section did nothing. Crystals are stored per player, not in the
   shared parameter table the rest of that tab uses, so the mod was writing to a place the game never reads.
   They now go through the game's own per-player crystal balance.

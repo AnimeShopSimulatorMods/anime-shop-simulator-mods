@@ -602,12 +602,17 @@ namespace CheatForDev.Ui
             Controls.Label("Written to the save, so it survives a restart.");
 
             Controls.Space(10f);
-            Controls.Header("Crystal shop");
+            Controls.Header("Places");
             Controls.Label(UnlockCheats.SpecialShopStatus);
+            Controls.Label(UnlockCheats.OutfitShopStatus);
+            Controls.Label(UnlockCheats.SecondFloorStatus);
             Controls.BeginRow();
-            if (Controls.Button("Open the crystal shop", 200f)) UnlockCheats.UnlockSpecialShop();
+            if (Controls.Button("Crystal shop", 150f)) UnlockCheats.UnlockSpecialShop();
+            if (Controls.Button("Clothes shop", 150f)) UnlockCheats.OpenOutfitShop();
+            if (Controls.Button("Second floor", 150f)) UnlockCheats.OpenSecondFloor();
             Controls.EndRow();
-            Controls.Label("The stand that sells special packs for crystals. Also written to the save.");
+            Controls.Label("All three are written to the save. The second floor moves quest progress past " +
+                           "the quest that grants it, so earlier quests count as done.");
 
             Controls.Space(10f);
             DrawTutorial();

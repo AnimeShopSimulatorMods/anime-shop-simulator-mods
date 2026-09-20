@@ -139,6 +139,8 @@ namespace CheatForDev
             MelonLogger.Msg($"  tutorial: {Cheats.TutorialCheats.Status}");
             MelonLogger.Msg($"  inventory tools: {Cheats.UnlockCheats.InventoryToolStatus}");
             MelonLogger.Msg($"  {Cheats.UnlockCheats.SpecialShopStatus}");
+            MelonLogger.Msg($"  {Cheats.UnlockCheats.OutfitShopStatus}");
+            MelonLogger.Msg($"  {Cheats.UnlockCheats.SecondFloorStatus}");
 
             try
             {
