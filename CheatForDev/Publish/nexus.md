@@ -7,31 +7,28 @@ Nexus renders both as BBCode. Paste them as-is.
 
 ## File options - "File Description"
 
-Shown under the file name on the Files tab. Keep it to what changed and how to install.
+Shown under the file name on the Files tab. **Nexus caps this field at 255 characters**, so it holds
+the version, how to install, and what changed - nothing else. The full story goes on the mod page.
+
+Counted below with CRLF line endings, which is the worst case if Nexus counts a line break as two
+characters. Re-check the count after any edit; the field truncates silently rather than warning.
+
+244 / 255 characters:
 
 ```
-Version 0.5.0 - built against Anime Shop Simulator 1.0.5, needs MelonLoader 0.7.x.
+0.5.0 - game 1.0.5, MelonLoader 0.7.x. Extract into the game folder, load a save, press F8.
 
-Extract into your game folder. The zip already contains Mods\CheatForDev.dll, so it lands in the right place. Launch the game, load a save, press F8.
+New: clear away boxes and crates you spawned.
+Fixed: missing spawn buttons on some products. Free delivery is now free, and the boxes really arrive.
+```
 
-New in this version:
-- Clear up, in the Orders tab. Remove the selected product, every loose box, or unopened furniture crates. Your shelves, tills and anything else you built are never touched.
+A shorter spare, 208 / 255, if the one above ever runs long after an edit:
 
-Fixed in this version:
-- Some products could be picked in Orders but had no spawn buttons, so there was no way to order them. Thanks to Akainu30 for the report and the screenshots.
-- Free delivery was neither free nor reliable: it went through the game's own ordering path, which quietly rejected anything the shop does not currently sell, and charged you for the rest. Boxes are created directly now.
+```
+0.5.0 - game 1.0.5, MelonLoader 0.7.x. Extract into the game folder, load a save, press F8.
 
-Still in from 0.4.0:
-- Skip the whole tutorial in one click, and get everything it would have handed you along the way: the tools, the crystal shop, the clothes shop and the second floor.
-- Open the clothes shop and the second floor on their own, if you would rather not skip the tutorial.
-- Unlock every tool (mop, trash bag, decor kit, bat) and have it survive a restart.
-
-- Skip to the next day never moved the day counter, so ten presses still left you on day one. Worth knowing: the quest system schedules by that counter, so with it stuck nothing dated ever came due.
-- The Crystals buttons did nothing. They work now.
-- Tournament wins did nothing. It works now.
-- Unlocking the inventory tools was forgotten when you quit the game. It is saved now.
-
-Upgrading from an earlier version: replace the old DLL. Your settings and saves are kept. If an older version left a stray crystal or tournament-win value behind, the mod now points it out in the log; it is inert and can be ignored.
+New: clear away boxes and crates you spawned.
+Fixed: missing spawn buttons; free delivery now free and reliable.
 ```
 
 ---
