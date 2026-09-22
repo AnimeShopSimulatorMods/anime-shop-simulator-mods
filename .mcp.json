@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "game": {
+      "command": "GameMcp/Server/bin/Release/net10.0/GameMcp.exe",
+      "args": [],
+      "env": {
+        "GAME_PATH": "E:\\SteamLibrary\\steamapps\\common\\Anime Shop Simulator",
+        "GAME_BRIDGE_PORT": "47831"
+      }
+    }
+  }
+}

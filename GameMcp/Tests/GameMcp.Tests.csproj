@@ -15,4 +15,7 @@
     <!-- The bridge's networking has no game dependencies, so it is tested here for real. -->
     <Compile Include="..\..\GameBridge\Net\*.cs" Link="Bridge\%(Filename)%(Extension)" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Server\GameMcp.csproj" />
+  </ItemGroup>
 </Project>
