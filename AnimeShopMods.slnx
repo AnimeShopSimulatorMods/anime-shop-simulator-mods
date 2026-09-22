@@ -2,4 +2,5 @@
   <Project Path="SmartRestockEmployees/SmartRestockEmployees.csproj" />
   <Project Path="EmployeeOvertime/EmployeeOvertime.csproj" />
   <Project Path="CheatForDev/CheatForDev.csproj" />
+  <Project Path="GameBridge/GameBridge.csproj" />
 </Solution>
