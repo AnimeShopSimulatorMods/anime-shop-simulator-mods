@@ -13,6 +13,9 @@ namespace GameBridge.Commands
                 bridge = ModInfo.Version,
                 commands = dispatcher.Commands.OrderBy(name => name).ToArray(),
             });
+
+            ReflectionCommands.Register(dispatcher);
+            PrefsCommands.Register(dispatcher);
         }
     }
 }
