@@ -29,6 +29,11 @@ namespace GameBridge.Net
         public int TimeoutMs { get; }
         public JObject Response { get; private set; }
 
+        // True once either Reply or Fail has won the race to answer this request. The dispatcher
+        // checks this before running a queued command, so a command that already timed out on the
+        // client never runs its side effects later when the main thread catches up.
+        public bool IsAnswered => Volatile.Read(ref _answered) != 0;
+
         public void Reply(object result)
         {
             Answer(new JObject
@@ -45,6 +50,12 @@ namespace GameBridge.Net
         }
 
         public bool Wait() => _done.Wait(TimeoutMs);
+
+        // Blocks until Response is actually written, even when this call lost the race to answer.
+        // Interlocked.Exchange in Answer flips _answered before Response is assigned, so a caller
+        // that only checked IsAnswered (or whose own Answer call was the loser) could otherwise read
+        // Response before the winning thread has finished writing it.
+        internal void WaitAnswered() => _done.Wait();
 
         private void Answer(JObject response)
         {

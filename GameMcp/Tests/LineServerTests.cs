@@ -16,6 +16,10 @@ public sealed class LineServerTests : IDisposable
     private readonly CancellationTokenSource _stop = new CancellationTokenSource();
     private readonly Task _mainThread;
 
+    // Lets a test suspend the stand-in main thread mid-request, so a command can be shown to time
+    // out on the client before the "game" ever gets to run it.
+    private volatile bool _paused;
+
     public LineServerTests()
     {
         _server = new LineServer(_dispatcher, port: 0);
@@ -24,7 +28,7 @@ public sealed class LineServerTests : IDisposable
         {
             while (!_stop.IsCancellationRequested)
             {
-                _dispatcher.Pump(8);
+                if (!_paused) _dispatcher.Pump(8);
                 Thread.Sleep(2);
             }
         });
@@ -41,6 +45,9 @@ public sealed class LineServerTests : IDisposable
     {
         using var client = new TcpClient();
         client.Connect(IPAddress.Loopback, _server.Port);
+        // A regression that drops the connection or forgets to reply should fail the test outright
+        // instead of hanging the test run.
+        client.ReceiveTimeout = 5000;
         using var stream = client.GetStream();
         var bytes = Encoding.UTF8.GetBytes(line + "\n");
         stream.Write(bytes, 0, bytes.Length);
@@ -98,7 +105,7 @@ public sealed class LineServerTests : IDisposable
         _dispatcher.Register("later", (Request request) =>
         {
             int frames = 0;
-            _dispatcher.Defer(() =>
+            _dispatcher.Defer(request, () =>
             {
                 if (++frames < 3) return false;
                 request.Reply(new { frames });
@@ -119,5 +126,62 @@ public sealed class LineServerTests : IDisposable
 
         Assert.False((bool)reply["ok"]);
         Assert.Contains("Bad request", (string)reply["error"]);
+    }
+
+    [Fact]
+    public void Wrong_typed_id_is_an_error_not_a_dropped_connection()
+    {
+        var reply = Send("{\"id\":\"abc\",\"cmd\":\"x\"}");
+
+        Assert.False((bool)reply["ok"]);
+        Assert.Contains("Bad request", (string)reply["error"]);
+    }
+
+    [Fact]
+    public void Wrong_typed_cmd_is_an_error_not_a_dropped_connection()
+    {
+        var reply = Send("{\"id\":1,\"cmd\":{}}");
+
+        Assert.False((bool)reply["ok"]);
+        Assert.Contains("Bad request", (string)reply["error"]);
+    }
+
+    [Fact]
+    public void Timed_out_command_is_not_run_when_the_main_thread_catches_up()
+    {
+        int calls = 0;
+        _dispatcher.Register("count", (Request request) =>
+        {
+            Interlocked.Increment(ref calls);
+            request.Reply(new { });
+        });
+
+        // Pause the stand-in main thread so the request sits in the queue past its own timeout,
+        // exactly like a frozen or loading game would leave it.
+        _paused = true;
+        var reply = Send("{\"id\":6,\"cmd\":\"count\",\"timeoutMs\":200}");
+
+        Assert.False((bool)reply["ok"]);
+        Assert.Contains("timed out", (string)reply["error"]);
+
+        _paused = false;
+        Thread.Sleep(500);
+
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
+    public void Throwing_ticker_fails_its_request_instead_of_timing_out()
+    {
+        _dispatcher.Register("later-boom", (Request request) =>
+        {
+            _dispatcher.Defer(request, () => throw new InvalidOperationException("tick boom"));
+        });
+
+        var reply = Send("{\"id\":7,\"cmd\":\"later-boom\",\"timeoutMs\":5000}");
+
+        Assert.False((bool)reply["ok"]);
+        Assert.Contains("tick boom", (string)reply["error"]);
+        Assert.DoesNotContain("timed out", (string)reply["error"]);
     }
 }

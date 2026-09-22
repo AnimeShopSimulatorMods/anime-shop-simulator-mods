@@ -65,6 +65,9 @@ namespace GameBridge.Net
                 catch
                 {
                     if (!_running) return;
+                    // A transient accept failure (e.g. a half-open connection resetting) would
+                    // otherwise spin this loop at full CPU; back off briefly before retrying.
+                    Thread.Sleep(100);
                     continue;
                 }
 
@@ -113,12 +116,44 @@ namespace GameBridge.Net
                 return new JObject { ["id"] = 0, ["ok"] = false, ["error"] = $"Bad request: {ex.Message}" };
             }
 
-            int id = message.Value<int?>("id") ?? 0;
-            var command = message.Value<string>("cmd");
+            // "id", "cmd", and "timeoutMs" can each be present but the wrong JSON type (a string
+            // where a number is expected, an object where a string is expected, a number too large
+            // for Int32). Newtonsoft's Value<T> throws in that case; catching it and replying keeps
+            // the connection alive instead of tearing it down with no reply at all.
+            int id;
+            try
+            {
+                id = message.Value<int?>("id") ?? 0;
+            }
+            catch (Exception ex)
+            {
+                return new JObject { ["id"] = 0, ["ok"] = false, ["error"] = $"Bad request: invalid 'id': {ex.Message}" };
+            }
+
+            string command;
+            try
+            {
+                command = message.Value<string>("cmd");
+            }
+            catch (Exception ex)
+            {
+                return new JObject { ["id"] = id, ["ok"] = false, ["error"] = $"Bad request: invalid 'cmd': {ex.Message}" };
+            }
+
             if (string.IsNullOrEmpty(command))
                 return new JObject { ["id"] = id, ["ok"] = false, ["error"] = "Bad request: no 'cmd'." };
 
-            var request = new Request(id, command, message["args"] as JObject, message.Value<int?>("timeoutMs") ?? 0);
+            int timeoutMs;
+            try
+            {
+                timeoutMs = message.Value<int?>("timeoutMs") ?? 0;
+            }
+            catch (Exception ex)
+            {
+                return new JObject { ["id"] = id, ["ok"] = false, ["error"] = $"Bad request: invalid 'timeoutMs': {ex.Message}" };
+            }
+
+            var request = new Request(id, command, message["args"] as JObject, timeoutMs);
             _dispatcher.Enqueue(request);
 
             if (request.Wait()) return request.Response;
@@ -126,6 +161,10 @@ namespace GameBridge.Net
             // Answer once so a late reply from the main thread is dropped instead of written.
             request.Fail($"'{command}' timed out after {request.TimeoutMs} ms. " +
                          "The game may be frozen, loading, or paused in the background.");
+            // Fail can lose the race to a main-thread Reply that landed at the same instant: the
+            // winner flips _answered before it finishes writing Response, so read Response only
+            // after WaitAnswered confirms the winning call has actually written it.
+            request.WaitAnswered();
             return request.Response;
         }
     }
