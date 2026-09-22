@@ -111,12 +111,6 @@ namespace CheatForDev
             MelonPreferences.Save();
         }
 
-        public static void Log(string message)
-        {
-            if (VerboseLogs)
-                MelonLogger.Msg(message);
-        }
-
         private static void SetMenuVisible(bool visible)
         {
             if (visible == MenuVisible) return;

@@ -1,5 +1,4 @@
 using System;
-using AnimeShopMods.Dev;
 using AnimeShopMods.Dev.Cheats;
 using Il2CppProject.Code.Core.Services;
 using Il2CppProject.Code.Core.UI;
