@@ -61,8 +61,7 @@ namespace GameBridge
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
         {
-            // Restored in Task 5, once GameBridge/Reflection/Handles.cs exists.
-            // Reflection.Handles.Clear(sceneName);
+            Reflection.Handles.Clear(sceneName);
             AnimeShopMods.Dev.GameAccess.Reset();
         }
 
