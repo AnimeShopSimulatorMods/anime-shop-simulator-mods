@@ -16,6 +16,7 @@ namespace GameBridge.Commands
 
             ReflectionCommands.Register(dispatcher);
             PrefsCommands.Register(dispatcher);
+            StateCommands.Register(dispatcher);
         }
     }
 }
