@@ -61,14 +61,15 @@ namespace GameBridge
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
         {
+            // A held key must not survive into whatever scene loads next.
+            Input.Win32Input.ReleaseAll();
             Reflection.Handles.Clear(sceneName);
             AnimeShopMods.Dev.GameAccess.Reset();
         }
 
         public override void OnApplicationQuit()
         {
-            // Restored in Task 11, once GameBridge/Input/Win32Input.cs exists.
-            // Input.Win32Input.ReleaseAll();
+            Input.Win32Input.ReleaseAll();
             _server?.Stop();
         }
     }

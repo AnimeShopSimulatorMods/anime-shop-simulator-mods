@@ -20,6 +20,7 @@ namespace GameBridge.Commands
             CheatCommands.Register(dispatcher);
             WaitCommands.Register(dispatcher);
             VisualCommands.Register(dispatcher);
+            InputCommands.Register(dispatcher);
         }
     }
 }
