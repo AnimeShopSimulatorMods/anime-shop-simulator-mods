@@ -4,7 +4,7 @@ using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // Skipping the tutorial means finishing two separate systems, both owned by TutorController:
     //
@@ -119,7 +119,7 @@ namespace CheatForDev.Cheats
                 try
                 {
                     controller.Save();
-                    Main.Log("[CheatForDev]   saved the tutorial state.");
+                    DevLog.Log("[CheatForDev]   saved the tutorial state.");
                 }
                 catch (Exception ex)
                 {
@@ -157,7 +157,7 @@ namespace CheatForDev.Cheats
             try
             {
                 controller._sharedTutorialState.Value = new Vector2Int(total, 0);
-                Main.Log($"[CheatForDev]   moved the step to {total} (one past the last).");
+                DevLog.Log($"[CheatForDev]   moved the step to {total} (one past the last).");
             }
             catch (Exception ex)
             {
@@ -170,11 +170,11 @@ namespace CheatForDev.Cheats
             try
             {
                 controller.ApplySharedTutorialState(total, 0, false);
-                Main.Log("[CheatForDev]   refreshed the local tutorial panel.");
+                DevLog.Log("[CheatForDev]   refreshed the local tutorial panel.");
             }
             catch (Exception ex)
             {
-                Main.Log($"[CheatForDev]   could not refresh the panel ({ex.GetType().Name}); " +
+                DevLog.Log($"[CheatForDev]   could not refresh the panel ({ex.GetType().Name}); " +
                          "it will catch up on the next state change.");
             }
         }
@@ -186,11 +186,11 @@ namespace CheatForDev.Cheats
             try
             {
                 controller.ClearUiTutorQueue();
-                Main.Log("[CheatForDev]   cleared the popup queue.");
+                DevLog.Log("[CheatForDev]   cleared the popup queue.");
             }
             catch (Exception ex)
             {
-                Main.Log($"[CheatForDev]   could not clear the popup queue ({ex.GetType().Name}).");
+                DevLog.Log($"[CheatForDev]   could not clear the popup queue ({ex.GetType().Name}).");
             }
 
             var config = controller._tutorialConfig;
@@ -213,14 +213,14 @@ namespace CheatForDev.Cheats
                 catch (Exception ex)
                 {
                     failed++;
-                    Main.Log($"[CheatForDev]   popup '{data.Id}' would not mark complete ({ex.GetType().Name}).");
+                    DevLog.Log($"[CheatForDev]   popup '{data.Id}' would not mark complete ({ex.GetType().Name}).");
                 }
             }
 
             if (failed > 0)
                 MelonLogger.Warning($"[CheatForDev]   marked {marked} popups complete, {failed} refused.");
             else
-                Main.Log($"[CheatForDev]   marked {marked} popups complete.");
+                DevLog.Log($"[CheatForDev]   marked {marked} popups complete.");
         }
 
         private static int StepCount(TutorController controller)

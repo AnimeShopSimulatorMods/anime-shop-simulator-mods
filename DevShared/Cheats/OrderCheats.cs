@@ -8,7 +8,7 @@ using PickupType = Il2CppProject.Code.Gameplay.Definitions.PickupType;
 using Il2CppProject.Code.Gameplay.Services;
 using MelonLoader;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // Free deliveries. SpawnOrders drops boxes straight onto the delivery point without touching the
     // basket or the wallet, which is what "unlimited ordering" actually means here.
@@ -51,7 +51,7 @@ namespace CheatForDev.Cheats
 
                 list.Sort((a, b) => string.CompareOrdinal(a.Label, b.Label));
                 _catalog = list;
-                Main.Log($"[CheatForDev] Box catalog built: {list.Count} entries " +
+                DevLog.Log($"[CheatForDev] Box catalog built: {list.Count} entries " +
                          $"({fromShop} from the shop list, {fromDecor} more from the second-floor decor list).");
             }
             catch (Exception ex)
@@ -110,7 +110,7 @@ namespace CheatForDev.Cheats
                 MelonLogger.Warning($"[CheatForDev] Asked for {count} '{definition.Name}' but only " +
                                     $"{spawned} could be placed; the delivery point is probably full.");
             else
-                Main.Log($"[CheatForDev] Spawned {spawned} box(es) of '{definition.Name}' " +
+                DevLog.Log($"[CheatForDev] Spawned {spawned} box(es) of '{definition.Name}' " +
                          $"(id {pickupDefinitionId}, type {definition.Type}).");
         }
 
@@ -169,7 +169,7 @@ namespace CheatForDev.Cheats
             }
             catch (Exception ex)
             {
-                Main.Log($"[CheatForDev] Could not check the wallet after spawning ({ex.GetType().Name}).");
+                DevLog.Log($"[CheatForDev] Could not check the wallet after spawning ({ex.GetType().Name}).");
             }
         }
 
@@ -342,7 +342,7 @@ namespace CheatForDev.Cheats
                 }
                 catch (Exception ex)
                 {
-                    Main.Log($"[CheatForDev]   rollback was unavailable ({ex.GetType().Name}); " +
+                    DevLog.Log($"[CheatForDev]   rollback was unavailable ({ex.GetType().Name}); " +
                              "despawning one at a time instead.");
                     result.Removed = DespawnEachSeparately(orders, doomed, ref result);
                 }
@@ -418,11 +418,11 @@ namespace CheatForDev.Cheats
                 {
                     orders.RollbackSpawnedPickups(doomed);
                     result.Removed = before;
-                    Main.Log($"[CheatForDev]   removed {before} via the game's own rollback.");
+                    DevLog.Log($"[CheatForDev]   removed {before} via the game's own rollback.");
                 }
                 catch (Exception ex)
                 {
-                    Main.Log($"[CheatForDev]   rollback was unavailable ({ex.GetType().Name}); " +
+                    DevLog.Log($"[CheatForDev]   rollback was unavailable ({ex.GetType().Name}); " +
                              "despawning one at a time instead.");
                     result.Removed = DespawnEachSeparately(orders, doomed, ref result);
                 }
@@ -472,9 +472,9 @@ namespace CheatForDev.Cheats
             if (result.SkippedQuest > 0)
                 MelonLogger.Msg($"[CheatForDev]   left {result.SkippedQuest} quest delivery box(es) alone.");
             if (result.SkippedInPlace > 0)
-                Main.Log($"[CheatForDev]   left {result.SkippedInPlace} box(es) that are on a shelf or in hands.");
+                DevLog.Log($"[CheatForDev]   left {result.SkippedInPlace} box(es) that are on a shelf or in hands.");
             if (result.SkippedNotABox > 0)
-                Main.Log($"[CheatForDev]   left {result.SkippedNotABox} item(s) alone: shop fittings, anything " +
+                DevLog.Log($"[CheatForDev]   left {result.SkippedNotABox} item(s) alone: shop fittings, anything " +
                          "already built in, and anything the game could not identify.");
             if (result.Failed > 0)
                 MelonLogger.Warning($"[CheatForDev]   {result.Failed} box(es) refused to despawn.");

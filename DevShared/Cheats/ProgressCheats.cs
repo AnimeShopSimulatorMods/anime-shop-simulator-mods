@@ -5,7 +5,7 @@ using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // Money, shop experience, level and the day counter share one table on the controller, keyed by
     // ParameterType, so a single pair of read/write helpers covers all four.
@@ -340,7 +340,7 @@ namespace CheatForDev.Cheats
         // whole release, so a mismatch is a warning and is never hidden behind the verbose setting.
         private static void ReportWrite(string label, string route, float asked, float before, float after)
         {
-            Main.Log($"[CheatForDev] {label}: {before} -> {after} (asked for {asked}, via {route}).");
+            DevLog.Log($"[CheatForDev] {label}: {before} -> {after} (asked for {asked}, via {route}).");
 
             if (Mathf.Approximately(before, after) && !Mathf.Approximately(before, asked))
                 MelonLogger.Warning(

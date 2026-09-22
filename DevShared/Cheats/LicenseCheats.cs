@@ -5,7 +5,7 @@ using Il2CppProject.Code.Gameplay.Definitions;
 using Il2CppProject.Code.Gameplay.Services;
 using MelonLoader;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // What the shop UI calls a licence the code calls a brand: PickupDefinition entries of PickupType.Brand,
     // tracked in ProductsController._brands. BuyBrandSystem is the game's own no-charge unlock, the same call
@@ -94,7 +94,7 @@ namespace CheatForDev.Cheats
                     if (controller == null) return false;
                     controller.BuyBrandSystem(brandId);
                 }
-                Main.Log($"[CheatForDev] Licence {brandId} unlocked.");
+                DevLog.Log($"[CheatForDev] Licence {brandId} unlocked.");
                 return true;
             }
             catch (Exception ex)

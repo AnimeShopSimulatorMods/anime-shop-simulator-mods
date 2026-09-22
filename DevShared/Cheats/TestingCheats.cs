@@ -5,7 +5,7 @@ using Il2CppProject.Code.Gameplay.Player.Controllers;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // Helpers aimed at testing the other mods in this solution rather than at playing the game:
     // stop customers interfering, fabricate the situations that are otherwise rare, move around quickly.
@@ -36,7 +36,7 @@ namespace CheatForDev.Cheats
             {
                 GameAccess.Buyers.DebugToggle(enabled);
                 BuyersEnabled = enabled;
-                Main.Log($"[CheatForDev] Customers {(enabled ? "enabled" : "disabled")}.");
+                DevLog.Log($"[CheatForDev] Customers {(enabled ? "enabled" : "disabled")}.");
             }
             catch (Exception ex)
             {
@@ -50,7 +50,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Buyers.SpawnBuyerFromDebug(type, false);
-                Main.Log($"[CheatForDev] Spawned a {type} customer.");
+                DevLog.Log($"[CheatForDev] Spawned a {type} customer.");
             }
             catch (Exception ex)
             {
@@ -64,7 +64,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Buyers.RemoveAllBuyersAsync();
-                Main.Log("[CheatForDev] Removing every customer.");
+                DevLog.Log("[CheatForDev] Removing every customer.");
             }
             catch (Exception ex)
             {
@@ -100,7 +100,7 @@ namespace CheatForDev.Cheats
                 var dirt = UnityEngine.Object.FindObjectOfType<DirtController>();
                 if (dirt == null) return;
                 int removed = dirt.ClearAllDirt();
-                Main.Log($"[CheatForDev] Removed {removed} piece(s) of dirt.");
+                DevLog.Log($"[CheatForDev] Removed {removed} piece(s) of dirt.");
             }
             catch (Exception ex)
             {
@@ -136,7 +136,7 @@ namespace CheatForDev.Cheats
             try
             {
                 player.position = position;
-                Main.Log($"[CheatForDev] Teleported to {position}.");
+                DevLog.Log($"[CheatForDev] Teleported to {position}.");
                 return true;
             }
             catch (Exception ex)

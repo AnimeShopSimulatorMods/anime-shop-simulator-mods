@@ -5,7 +5,7 @@ using Il2CppProject.Code.Gameplay.Player.Products;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // Emptying sales shelves, either by deleting the stock outright or by turning it back into boxes
     // at the delivery point so it can be restocked again.
@@ -123,7 +123,7 @@ namespace CheatForDev.Cheats
                     if (productPlace == null || productPlace.Count == 0) continue;
                     removed += EmptySlot(productPlace);
                 }
-                Main.Log($"[CheatForDev] Deleted {removed} item(s) from '{shelf.gameObject.name}'.");
+                DevLog.Log($"[CheatForDev] Deleted {removed} item(s) from '{shelf.gameObject.name}'.");
             }
             catch (Exception ex)
             {
@@ -184,7 +184,7 @@ namespace CheatForDev.Cheats
                     orders.CreateShelfPickup(pickupDefinition.Id, position, rotation, count, productId, null, null, null);
                     returned += count;
                 }
-                Main.Log($"[CheatForDev] Returned {returned} item(s) from '{shelf.gameObject.name}' to the delivery point.");
+                DevLog.Log($"[CheatForDev] Returned {returned} item(s) from '{shelf.gameObject.name}' to the delivery point.");
             }
             catch (Exception ex)
             {
@@ -212,7 +212,7 @@ namespace CheatForDev.Cheats
             try
             {
                 shelf.DropSingleRandomItem();
-                Main.Log($"[CheatForDev] Dropped an item from '{shelf.gameObject.name}'.");
+                DevLog.Log($"[CheatForDev] Dropped an item from '{shelf.gameObject.name}'.");
             }
             catch (Exception ex)
             {
