@@ -18,6 +18,7 @@ namespace GameBridge.Commands
             PrefsCommands.Register(dispatcher);
             StateCommands.Register(dispatcher);
             CheatCommands.Register(dispatcher);
+            WaitCommands.Register(dispatcher);
         }
     }
 }
