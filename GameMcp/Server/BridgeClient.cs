@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
 
 namespace GameMcp;
@@ -16,6 +17,11 @@ public sealed class BridgeClient(int port)
     private const int ConnectTimeoutMs = 1500;
     private const int ExtraReplyMs = 5000;
     private static int _nextId;
+
+    // The bridge reads optional arguments with Newtonsoft's `args["x"] != null`, and an explicit JSON
+    // null parses to a non-null JValue there. Leaving nulls out keeps "not given" meaning not given.
+    private static readonly JsonSerializerOptions ArgsOptions =
+        new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     public int Port => port;
 
@@ -39,7 +45,7 @@ public sealed class BridgeClient(int port)
         {
             ["id"] = Interlocked.Increment(ref _nextId),
             ["cmd"] = command,
-            ["args"] = args == null ? null : JsonSerializer.SerializeToNode(args),
+            ["args"] = args == null ? null : JsonSerializer.SerializeToNode(args, ArgsOptions),
             ["timeoutMs"] = timeoutMs,
         };
 

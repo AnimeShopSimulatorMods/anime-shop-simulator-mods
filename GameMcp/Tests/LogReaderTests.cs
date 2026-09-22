@@ -35,4 +35,16 @@ public sealed class LogReaderTests
 
         Assert.Contains(@"C:\definitely\missing\Latest.log", text);
     }
+
+    [Fact]
+    public void Bad_grep_pattern_is_a_tool_error_not_a_crash()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(Path.Combine(dir, "MelonLoader"));
+        File.WriteAllLines(Path.Combine(dir, "MelonLoader", "Latest.log"), new[] { "line" });
+
+        var result = GameMcp.Tools.BasicTools.ReadLog(new GamePaths(dir), 10, "[", false);
+
+        Assert.True(result.IsError);
+    }
 }

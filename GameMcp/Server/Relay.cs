@@ -27,6 +27,10 @@ public static class Relay
         {
             return Error($"'{command}' got no answer in time. The game may be frozen or loading.");
         }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
+        {
+            return Error($"'{command}' got a reply this server could not read: {ex.Message}");
+        }
     }
 
     public static CallToolResult Text(string text) =>
