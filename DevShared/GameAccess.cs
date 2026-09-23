@@ -6,7 +6,7 @@ using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev
+namespace AnimeShopMods.Dev
 {
     // Every lookup the cheats need, in one place, with two routes to each object:
     // the game's service locator first, and a scene search as the fallback. Il2CppInterop cannot always

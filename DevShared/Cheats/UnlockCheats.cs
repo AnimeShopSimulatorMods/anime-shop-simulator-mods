@@ -4,7 +4,7 @@ using Il2CppProject.Code.Gameplay.Configs;
 using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // Unlocks, upgrades and debt. Several of these only exist as methods on the game's own CheatController,
     // which may or may not still be in the shipped scene, so each one reports whether it is reachable.
@@ -46,7 +46,7 @@ namespace CheatForDev.Cheats
             try
             {
                 Native.OpenAllCards();
-                Main.Log("[CheatForDev] Opened every card.");
+                DevLog.Log("[CheatForDev] Opened every card.");
             }
             catch (Exception ex)
             {
@@ -100,18 +100,18 @@ namespace CheatForDev.Cheats
                 try
                 {
                     quests.RefreshPresentation();
-                    Main.Log("[CheatForDev]   refreshed the inventory bar.");
+                    DevLog.Log("[CheatForDev]   refreshed the inventory bar.");
                 }
                 catch (Exception ex)
                 {
-                    Main.Log($"[CheatForDev]   could not refresh the inventory bar ({ex.GetType().Name}); " +
+                    DevLog.Log($"[CheatForDev]   could not refresh the inventory bar ({ex.GetType().Name}); " +
                              "it will catch up on its own.");
                 }
 
                 try
                 {
                     quests.Save();
-                    Main.Log("[CheatForDev]   saved the quest state.");
+                    DevLog.Log("[CheatForDev]   saved the quest state.");
                 }
                 catch (Exception ex)
                 {
@@ -343,7 +343,7 @@ namespace CheatForDev.Cheats
                 // open while it was still shut in the world, because the game's own call site passes the
                 // quest day - the clock's idea of the date is a different number entirely.
                 bool open = quests.IsOutfitOpenerOpen(questDay);
-                Main.Log($"[CheatForDev]   unlock day {unlockDay}, asked with quest day {questDay} -> " +
+                DevLog.Log($"[CheatForDev]   unlock day {unlockDay}, asked with quest day {questDay} -> " +
                          $"{OpenWord(open)}.");
                 return open;
             }
@@ -420,17 +420,17 @@ namespace CheatForDev.Cheats
                 if (before <= index)
                 {
                     quests._scenarioIndex.Value = index + 1;
-                    Main.Log($"[CheatForDev]   quest progress moved from {before} to {index + 1}.");
+                    DevLog.Log($"[CheatForDev]   quest progress moved from {before} to {index + 1}.");
                 }
 
                 try
                 {
                     quests.ApplySecondFloorQuestVisibility();
-                    Main.Log("[CheatForDev]   applied the second floor's visibility.");
+                    DevLog.Log("[CheatForDev]   applied the second floor's visibility.");
                 }
                 catch (Exception ex)
                 {
-                    Main.Log($"[CheatForDev]   could not apply the visibility ({ex.GetType().Name}); " +
+                    DevLog.Log($"[CheatForDev]   could not apply the visibility ({ex.GetType().Name}); " +
                              "it should catch up on the next load.");
                 }
 
@@ -480,18 +480,18 @@ namespace CheatForDev.Cheats
             {
                 quests.NotifyStateChanged();
                 quests.RefreshPresentation();
-                Main.Log("[CheatForDev]   refreshed the quest presentation.");
+                DevLog.Log("[CheatForDev]   refreshed the quest presentation.");
             }
             catch (Exception ex)
             {
-                Main.Log($"[CheatForDev]   could not refresh the presentation ({ex.GetType().Name}); " +
+                DevLog.Log($"[CheatForDev]   could not refresh the presentation ({ex.GetType().Name}); " +
                          "it will catch up on its own.");
             }
 
             try
             {
                 quests.Save();
-                Main.Log("[CheatForDev]   saved the quest state.");
+                DevLog.Log("[CheatForDev]   saved the quest state.");
             }
             catch (Exception ex)
             {
@@ -548,18 +548,18 @@ namespace CheatForDev.Cheats
                 // trusting the flag we just wrote.
                 try
                 {
-                    Main.Log($"[CheatForDev]   the game now reports the shop as " +
+                    DevLog.Log($"[CheatForDev]   the game now reports the shop as " +
                              $"{Word(quests.IsSpecialShopUnlocked())}.");
                 }
                 catch (Exception ex)
                 {
-                    Main.Log($"[CheatForDev]   could not read the shop state back ({ex.GetType().Name}).");
+                    DevLog.Log($"[CheatForDev]   could not read the shop state back ({ex.GetType().Name}).");
                 }
 
                 try
                 {
                     quests.Save();
-                    Main.Log("[CheatForDev]   saved the quest state.");
+                    DevLog.Log("[CheatForDev]   saved the quest state.");
                 }
                 catch (Exception ex)
                 {
@@ -599,7 +599,7 @@ namespace CheatForDev.Cheats
             {
                 if (read())
                 {
-                    Main.Log($"[CheatForDev]   {label}: already unlocked.");
+                    DevLog.Log($"[CheatForDev]   {label}: already unlocked.");
                     return 0;
                 }
 
@@ -611,7 +611,7 @@ namespace CheatForDev.Cheats
                     return 0;
                 }
 
-                Main.Log($"[CheatForDev]   {label}: unlocked.");
+                DevLog.Log($"[CheatForDev]   {label}: unlocked.");
                 return 1;
             }
             catch (Exception ex)
@@ -625,7 +625,7 @@ namespace CheatForDev.Cheats
         // slots the game now considers available. Purely diagnostic.
         private static void LogToolAvailability(QuestController quests, string when)
         {
-            if (!Main.VerboseLogs) return;
+            if (!DevLog.Verbose) return;
             try
             {
                 var line = new System.Text.StringBuilder();
@@ -636,7 +636,7 @@ namespace CheatForDev.Cheats
                     catch { break; }
                     line.Append(id).Append('=').Append(available ? "yes " : "no  ");
                 }
-                Main.Log($"[CheatForDev]   tool availability {when}: {line}");
+                DevLog.Log($"[CheatForDev]   tool availability {when}: {line}");
             }
             catch
             {
@@ -667,7 +667,7 @@ namespace CheatForDev.Cheats
             try
             {
                 Native.CanvasToggle();
-                Main.Log("[CheatForDev] Toggled the game's own cheat panel.");
+                DevLog.Log("[CheatForDev] Toggled the game's own cheat panel.");
             }
             catch (Exception ex)
             {
@@ -681,7 +681,7 @@ namespace CheatForDev.Cheats
             try
             {
                 Native.SpawnBuildings();
-                Main.Log("[CheatForDev] Spawned the debug buildings.");
+                DevLog.Log("[CheatForDev] Spawned the debug buildings.");
             }
             catch (Exception ex)
             {
@@ -719,7 +719,7 @@ namespace CheatForDev.Cheats
 
                 int index = controller.GetBoughtUpgradeCount(type);
                 bool opened = controller.OpenUpgradeSystem(type, index);
-                Main.Log($"[CheatForDev] Upgrade {type} step {index}: {(opened ? "unlocked" : "refused by the game")}.");
+                DevLog.Log($"[CheatForDev] Upgrade {type} step {index}: {(opened ? "unlocked" : "refused by the game")}.");
             }
             catch (Exception ex)
             {

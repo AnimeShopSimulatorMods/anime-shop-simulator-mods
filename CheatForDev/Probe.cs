@@ -1,4 +1,5 @@
 using System;
+using AnimeShopMods.Dev.Cheats;
 using Il2CppProject.Code.Core.Services;
 using Il2CppProject.Code.Core.UI;
 using Il2CppProject.Code.Gameplay.Configs;
@@ -136,11 +137,11 @@ namespace CheatForDev
             Report<BuyersController>("BuyersController");
             Report<TutorController>("TutorController");
             Report<QuestController>("QuestController");
-            MelonLogger.Msg($"  tutorial: {Cheats.TutorialCheats.Status}");
-            MelonLogger.Msg($"  inventory tools: {Cheats.UnlockCheats.InventoryToolStatus}");
-            MelonLogger.Msg($"  {Cheats.UnlockCheats.SpecialShopStatus}");
-            MelonLogger.Msg($"  {Cheats.UnlockCheats.OutfitShopStatus}");
-            MelonLogger.Msg($"  {Cheats.UnlockCheats.SecondFloorStatus}");
+            MelonLogger.Msg($"  tutorial: {TutorialCheats.Status}");
+            MelonLogger.Msg($"  inventory tools: {UnlockCheats.InventoryToolStatus}");
+            MelonLogger.Msg($"  {UnlockCheats.SpecialShopStatus}");
+            MelonLogger.Msg($"  {UnlockCheats.OutfitShopStatus}");
+            MelonLogger.Msg($"  {UnlockCheats.SecondFloorStatus}");
 
             try
             {

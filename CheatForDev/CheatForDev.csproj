@@ -5,5 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" />
+    <Compile Include="..\DevShared\**\*.cs" />
   </ItemGroup>
 </Project>

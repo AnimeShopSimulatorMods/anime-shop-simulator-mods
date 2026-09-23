@@ -3,7 +3,7 @@ using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
 using UnityEngine;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // The shop clock. Opening hours come from the game's own TimeConfig rather than a hard-coded
     // 9-to-21, so this keeps working if the developers move the hours.
@@ -116,7 +116,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Time.SetUpdateTime(running);
-                Main.Log($"[CheatForDev] Clock {(running ? "resumed" : "paused")}.");
+                DevLog.Log($"[CheatForDev] Clock {(running ? "resumed" : "paused")}.");
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Time.SetServerMinutes(wanted - MinutesOffset);
-                Main.Log($"[CheatForDev] Clock set to {wanted / 60:00}:{wanted % 60:00}.");
+                DevLog.Log($"[CheatForDev] Clock set to {wanted / 60:00}:{wanted % 60:00}.");
             }
             catch (Exception ex)
             {
@@ -149,7 +149,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Time.DebugSetTimeMultiplier(multiplier);
-                Main.Log($"[CheatForDev] Time multiplier set to {multiplier}.");
+                DevLog.Log($"[CheatForDev] Time multiplier set to {multiplier}.");
             }
             catch (Exception ex)
             {
@@ -163,7 +163,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Time.DebugForceEndDay();
-                Main.Log("[CheatForDev] Day ended.");
+                DevLog.Log("[CheatForDev] Day ended.");
             }
             catch (Exception ex)
             {
@@ -186,7 +186,7 @@ namespace CheatForDev.Cheats
                 ProgressCheats.Add(ParameterType.Day, 1f);
                 float after = ProgressCheats.Get(ParameterType.Day);
 
-                Main.Log($"[CheatForDev] Skipped to the next day (day counter {before} -> {after}).");
+                DevLog.Log($"[CheatForDev] Skipped to the next day (day counter {before} -> {after}).");
 
                 if (Mathf.Approximately(before, after))
                     MelonLogger.Warning("[CheatForDev] The clock moved on but the day counter did not. " +

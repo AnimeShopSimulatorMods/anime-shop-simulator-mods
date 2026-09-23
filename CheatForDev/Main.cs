@@ -1,6 +1,7 @@
 using AnimeShopMods;
+using AnimeShopMods.Dev;
+using AnimeShopMods.Dev.Cheats;
 using AnimeShopMods.Ui;
-using CheatForDev.Cheats;
 using CheatForDev.Ui;
 using MelonLoader;
 using UnityEngine;
@@ -38,6 +39,8 @@ namespace CheatForDev
 
         public override void OnInitializeMelon()
         {
+            DevLog.VerboseSwitch = () => VerboseLogs;
+
             var category = MelonPreferences.CreateCategory("CheatForDev", ModInfo.Name);
             _toggleKey = category.CreateEntry("ToggleKey", "F8", "Toggle key",
                 "Key that opens and closes the cheat menu. Any UnityEngine.KeyCode name.");
@@ -106,12 +109,6 @@ namespace CheatForDev
             _windowX.Value = x;
             _windowY.Value = y;
             MelonPreferences.Save();
-        }
-
-        public static void Log(string message)
-        {
-            if (VerboseLogs)
-                MelonLogger.Msg(message);
         }
 
         private static void SetMenuVisible(bool visible)

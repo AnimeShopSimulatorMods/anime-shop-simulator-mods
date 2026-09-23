@@ -1,0 +1,4 @@
+<Project>
+  <!-- Stops MSBuild from walking up to the repo-root props, which force net48 and the game's
+       Il2Cpp references onto every project. The MCP server and its tests are ordinary .NET apps. -->
+</Project>

@@ -4,7 +4,7 @@ using Il2CppProject.Code.Gameplay.Configs;
 using Il2CppProject.Code.Gameplay.Controllers;
 using MelonLoader;
 
-namespace CheatForDev.Cheats
+namespace AnimeShopMods.Dev.Cheats
 {
     // Per-employee level, experience and tier. The game exposes proper server calls for promoting and
     // hiring, so those are used where they exist; the raw fields are only written when nothing else will do.
@@ -40,7 +40,7 @@ namespace CheatForDev.Cheats
             try
             {
                 info.Level = Math.Max(0, level);
-                Main.Log($"[CheatForDev] Employee {info.Index} level set to {info.Level}.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} level set to {info.Level}.");
             }
             catch (Exception ex)
             {
@@ -54,7 +54,7 @@ namespace CheatForDev.Cheats
             try
             {
                 info.Experience = Math.Max(0f, experience);
-                Main.Log($"[CheatForDev] Employee {info.Index} experience set to {info.Experience}.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} experience set to {info.Experience}.");
             }
             catch (Exception ex)
             {
@@ -68,7 +68,7 @@ namespace CheatForDev.Cheats
             try
             {
                 info.TierIndex = Math.Max(0, tier);
-                Main.Log($"[CheatForDev] Employee {info.Index} tier set to {info.TierIndex}.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} tier set to {info.TierIndex}.");
             }
             catch (Exception ex)
             {
@@ -82,7 +82,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Employees.PromoteEmployeeServer(info.Index);
-                Main.Log($"[CheatForDev] Employee {info.Index} promoted.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} promoted.");
             }
             catch (Exception ex)
             {
@@ -96,7 +96,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Employees.BoostEmployeeServer(info.Index);
-                Main.Log($"[CheatForDev] Employee {info.Index} boosted.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} boosted.");
             }
             catch (Exception ex)
             {
@@ -110,7 +110,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Employees.PayEmployeeBillServer(info.Index);
-                Main.Log($"[CheatForDev] Employee {info.Index} debt cleared.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} debt cleared.");
             }
             catch (Exception ex)
             {
@@ -124,7 +124,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Employees.HireEmployeeServer(info.Index, Math.Max(0, tierIndex));
-                Main.Log($"[CheatForDev] Employee {info.Index} hired at tier {tierIndex}.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} hired at tier {tierIndex}.");
             }
             catch (Exception ex)
             {
@@ -138,7 +138,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Employees.EmployeeChangedServer(info.Index, true, type);
-                Main.Log($"[CheatForDev] Employee {info.Index} set to {type}.");
+                DevLog.Log($"[CheatForDev] Employee {info.Index} set to {type}.");
             }
             catch (Exception ex)
             {
@@ -152,7 +152,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Employees.AddPromotionExperienceToRandomEmployeeServer();
-                Main.Log("[CheatForDev] Promotion experience granted to a random employee.");
+                DevLog.Log("[CheatForDev] Promotion experience granted to a random employee.");
             }
             catch (Exception ex)
             {
@@ -166,7 +166,7 @@ namespace CheatForDev.Cheats
             try
             {
                 GameAccess.Employees.SpawnCashier();
-                Main.Log("[CheatForDev] Cashier spawned.");
+                DevLog.Log("[CheatForDev] Cashier spawned.");
             }
             catch (Exception ex)
             {
