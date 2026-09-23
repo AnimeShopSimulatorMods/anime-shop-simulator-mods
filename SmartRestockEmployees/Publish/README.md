@@ -56,6 +56,23 @@ back to your employees.
 
 ## Changelog
 
+### 1.5.0
+
+**Fixed: a forgotten shelf stayed forgotten, with no way back and nothing on screen explaining
+why.** Forget clears a slot's memory and sets it aside so employees leave it alone -- working as
+intended, but silent about it, and a slot a player later released from the panel came back
+unlocked yet still unremembered, so it stayed skipped for a reason the panel never mentioned. With
+"Employees may fill bare shelves" off, that slot was never getting stock again on its own.
+
+The panel now says so, and gives you the other half of Forget: **Remember**. Point at a shelf with
+forgotten slots on it and press F7 -- it offers to stock them with whatever the shelf already
+sells, and tells you when it cannot (stock one slot yourself first and it will know). When bare
+shelves are turned off, the panel also spells out, in plain words, that those slots are being left
+alone on purpose and names the switch that controls it.
+
+Thanks to **Drakolyte** on Nexus Mods, who reported employees completely avoiding shelves with no
+locked slots in sight.
+
 ### 1.4.0
 
 **Fixed: employees stopped restocking the whole store.** The mod judged whether a bare slot could

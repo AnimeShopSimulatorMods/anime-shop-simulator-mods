@@ -54,6 +54,8 @@ namespace SmartRestockEmployees.Ui
         private static int _lockedSlots;
         private static int _freeSlots;
         private static int _totalSlots;
+        private static int _bareSlots;
+        private static int _shelfProduct;
 
         public static void Reset()
         {
@@ -129,6 +131,8 @@ namespace SmartRestockEmployees.Ui
                 _lockedSlots = ShelfLocks.LockedSlots(shelf);
                 _freeSlots = ShelfLocks.EmptySlots(shelf) - _lockedSlots;
                 _totalSlots = _shelf == null ? 0 : _shelf.SlotCount;
+                _bareSlots = ShelfLocks.BareSlots(shelf);
+                _shelfProduct = ShelfMemory.ProductOnShelf(shelf);
 
                 if (_listView && (_shelves == null || Time.realtimeSinceStartup > _nextScan))
                 {
@@ -374,6 +378,53 @@ namespace SmartRestockEmployees.Ui
 
             GUI.enabled = wasEnabled;
             GUILayout.EndHorizontal();
+
+            // Only shown once there is nothing left to Allow: a shelf can be locked and bare at the
+            // same time (right after Forget), and Allow is the button for that. This row is for the
+            // slots Allow cannot reach -- ones a player already released, or ones that never held a
+            // product in the first place -- which still sit there unremembered and, with bare
+            // shelves turned off, quietly ignored.
+            if (_lockedSlots == 0 && _bareSlots > 0)
+            {
+                GUILayout.Space(8f);
+                GUILayout.BeginHorizontal();
+                GUILayout.BeginVertical();
+                GUILayout.Label("Let employees use these slots again", Skin.Body);
+                GUILayout.Label(_shelfProduct > 0
+                        ? $"Employees fill the {_bareSlots} forgotten slot(s) here with this shelf's product again."
+                        : "Stock one of these slots yourself first, so the mod knows what belongs here.",
+                    Skin.Hint);
+                GUILayout.EndVertical();
+                GUILayout.FlexibleSpace();
+
+                bool rememberWasEnabled = GUI.enabled;
+                GUI.enabled = rememberWasEnabled && _shelfProduct > 0;
+
+                if (GUILayout.Button("Remember", Skin.Secondary, GUILayout.Width(96f)))
+                {
+                    var shelf = entry.Shelf;
+                    int definitionId = _shelfProduct;
+                    Queue(() =>
+                    {
+                        int restored = ShelfMemory.Remember(shelf, definitionId);
+                        _status = restored > 0
+                            ? $"{restored} slot(s) will be stocked again."
+                            : "Nothing here to bring back.";
+                        _shelves = null;
+                    });
+                }
+
+                GUI.enabled = rememberWasEnabled;
+                GUILayout.EndHorizontal();
+            }
+
+            if (_bareSlots > 0 && !Main.FillFreeSlots)
+            {
+                GUILayout.Space(6f);
+                GUILayout.Label(
+                    "Employees will leave those slots alone while \"Employees may fill bare shelves\" is off.",
+                    Skin.Hint);
+            }
         }
 
         private static void Ask(ShelfFinder.ShelfEntry entry, bool secondZone)

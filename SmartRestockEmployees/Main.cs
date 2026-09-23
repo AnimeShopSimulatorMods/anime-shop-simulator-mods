@@ -15,7 +15,7 @@ namespace SmartRestockEmployees
     public static class ModInfo
     {
         public const string Name = "Smart Restock Employees";
-        public const string Version = "1.4.0";
+        public const string Version = "1.5.0";
         public const string Author = "1REDfriend";
         // Fill in the Nexus Mods page URL after the first upload, then rebuild.
         public const string DownloadLink = null;
