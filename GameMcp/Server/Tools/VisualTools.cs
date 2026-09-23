@@ -33,7 +33,7 @@ public static class VisualTools
     }
 
     [McpServerTool(Name = "teleport"), Description("Move the player to x,y,z, or in front of a shelf/slot handle. " +
-        "distance is how far in front (negative if the player lands behind it).")]
+        "distance is how far out from the shelf front the player stands.")]
     public static Task<CallToolResult> Teleport(BridgeClient bridge, string target = null, float? x = null, float? y = null,
         float? z = null, float distance = 1.5f, CancellationToken cancel = default) =>
         Relay.Run(bridge, "teleport", new { target, x, y, z, distance }, cancel: cancel);

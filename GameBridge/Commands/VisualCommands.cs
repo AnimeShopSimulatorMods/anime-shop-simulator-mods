@@ -3,6 +3,7 @@ using System.IO;
 using AnimeShopMods.Dev.Cheats;
 using GameBridge.Net;
 using GameBridge.Reflection;
+using Il2CppProject.Code.Gameplay.Player.Controllers;
 using MelonLoader.Utils;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -65,32 +66,55 @@ namespace GameBridge.Commands
             return new { player = JsonValues.Vec(player.position) };
         }
 
+        // Where the player looks is the camera controller's own two angles, not the transforms. Writing
+        // the transforms looks right for one frame and is then overwritten from those angles, which is
+        // what it did before: the view snapped back the moment the game's next LateUpdate ran.
         private static object LookAt(JObject args)
         {
-            var player = TestingCheats.LocalPlayer() ?? throw new InvalidOperationException("No local player.");
-            var camera = Camera.main ?? throw new InvalidOperationException("No main camera.");
+            var player = LocalPlayer();
+            var camera = player._cameraController
+                         ?? throw new InvalidOperationException("The player has no camera controller yet.");
+            var eye = camera._xTransform != null ? camera._xTransform.position : player.transform.position;
             var target = Point(args, standOff: 0f);
 
-            var flat = target - player.position;
-            flat.y = 0f;
-            if (flat.sqrMagnitude > 0.0001f) player.rotation = Quaternion.LookRotation(flat);
+            var toTarget = target - eye;
+            var flat = new Vector2(toTarget.x, toTarget.z);
+            if (flat.sqrMagnitude < 0.0001f)
+                throw new ArgumentException("The target is directly above or below the player; nothing to turn to.");
 
-            var fromEye = target - camera.transform.position;
-            float pitch = -Mathf.Atan2(fromEye.y, new Vector2(fromEye.x, fromEye.z).magnitude) * Mathf.Rad2Deg;
-            camera.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+            float yaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+            float pitch = -Mathf.Atan2(toTarget.y, flat.magnitude) * Mathf.Rad2Deg;
 
-            return new { yaw = player.rotation.eulerAngles.y, pitch, camera = JsonValues.Vec(camera.transform.position) };
+            // The game refuses to look further up or down than this, so match it rather than fight it.
+            var limits = camera._lookLimits;
+            pitch = Mathf.Clamp(pitch, Mathf.Min(limits.x, limits.y), Mathf.Max(limits.x, limits.y));
+
+            camera.ViewAngles = new Vector2(pitch, yaw);
+
+            return new { yaw, pitch, eye = JsonValues.Vec(eye) };
+        }
+
+        private static PlayerCharacterController LocalPlayer()
+        {
+            foreach (var player in UnityEngine.Object.FindObjectsOfType<PlayerCharacterController>())
+            {
+                if (player != null && player.IsOwner) return player;
+            }
+            throw new InvalidOperationException("No local player. Load a save first.");
         }
 
         // A point from {x,y,z}, or from a handle to anything with a transform. With a stand-off, the
-        // point is moved out in front of the object so the player does not land inside a shelf.
+        // point is moved out to the side a shelf is used from, so the player does not land inside it.
+        //
+        // That side is the shelf's BACK: measured in game 1.0.6, a shelf's forward points into the wall
+        // it stands against, so a positive stand-off drops the player behind the wall.
         private static Vector3 Point(JObject args, float standOff)
         {
             if (args["target"] != null)
             {
                 var component = (Component)JsonValues.Cast(Handles.Get((string)args["target"]), typeof(Component));
                 var t = component.transform;
-                return t.position + t.forward * standOff;
+                return t.position - t.forward * standOff;
             }
             if (args["x"] == null) throw new ArgumentException("Give target (a handle) or x, y, z.");
             return new Vector3((float)args["x"], (float)args["y"], (float)args["z"]);
