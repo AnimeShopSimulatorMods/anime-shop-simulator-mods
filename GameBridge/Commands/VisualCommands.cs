@@ -78,7 +78,7 @@ namespace GameBridge.Commands
             var camera = player._cameraController;
             if (camera == null) throw new InvalidOperationException("The player has no camera controller yet.");
             var eye = camera._xTransform != null ? camera._xTransform.position : player.transform.position;
-            var target = Point(args, standOff: 0f);
+            var target = AimPoint(args);
 
             var toTarget = target - eye;
             var flat = new Vector2(toTarget.x, toTarget.z);
@@ -104,6 +104,23 @@ namespace GameBridge.Commands
                 if (player != null && player.IsOwner) return player;
             }
             throw new InvalidOperationException("No local player. Load a save first.");
+        }
+
+        // What to look at, which is not the same point as where to stand. A shelf's own position sits on
+        // the floor, so aiming there points the camera at the boards; the middle of what the shelf
+        // actually draws is where a player would look.
+        private static Vector3 AimPoint(JObject args)
+        {
+            if (args["target"] == null) return Point(args, standOff: 0f);
+
+            var component = (Component)JsonValues.Cast(Handles.Get((string)args["target"]), typeof(Component));
+            var renderers = component.GetComponentsInChildren<Renderer>();
+            if (renderers == null || renderers.Length == 0) return component.transform.position;
+
+            var bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+                bounds.Encapsulate(renderers[i].bounds);
+            return bounds.center;
         }
 
         // A point from {x,y,z}, or from a handle to anything with a transform. With a stand-off, the
