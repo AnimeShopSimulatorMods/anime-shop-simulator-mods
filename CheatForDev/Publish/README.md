@@ -64,6 +64,7 @@ who wants to skip the grind. Press **F8** in game to open it.
 ## Requirements
 
 - [MelonLoader](https://github.com/LavaGang/MelonLoader) 0.7.x (tested on 0.7.3)
+- Anime Shop Simulator 1.0.6
 
 ## Installation
 
@@ -111,6 +112,13 @@ WindowY = 24.0
 - `WindowX` / `WindowY` — updated automatically whenever you drag the window.
 
 ## Changelog
+
+### 0.5.1
+- Checked against Anime Shop Simulator 1.0.6. The start-up probe finds every system the menu reaches,
+  and money, the clock, box orders and emptying shelves were all run against a live 1.0.6 save.
+  Nothing needed changing for the update itself; this release says so, where 0.5.0 still said 1.0.5.
+- Under the hood, the cheat code moved into a folder of its own so other dev tools can share it. The
+  menu behaves exactly as before.
 
 ### 0.5.0
 - Fixed: the spawn buttons never appeared for some products, so they could be selected but never

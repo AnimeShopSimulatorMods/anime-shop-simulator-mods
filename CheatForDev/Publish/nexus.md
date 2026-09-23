@@ -13,22 +13,20 @@ the version, how to install, and what changed - nothing else. The full story goe
 Counted below with CRLF line endings, which is the worst case if Nexus counts a line break as two
 characters. Re-check the count after any edit; the field truncates silently rather than warning.
 
-244 / 255 characters:
+235 / 255 characters:
 
 ```
-0.5.0 - game 1.0.5, MelonLoader 0.7.x. Extract into the game folder, load a save, press F8.
+0.5.1 - game 1.0.6, MelonLoader 0.7.x. Extract into the game folder, load a save, press F8.
 
-New: clear away boxes and crates you spawned.
-Fixed: missing spawn buttons on some products. Free delivery is now free, and the boxes really arrive.
+Checked against game 1.0.6; nothing needed changing. Includes 0.5.0: clear away spawned boxes and crates, free delivery that is really free.
 ```
 
-A shorter spare, 208 / 255, if the one above ever runs long after an edit:
+A shorter spare, 147 / 255, if the one above ever runs long after an edit:
 
 ```
-0.5.0 - game 1.0.5, MelonLoader 0.7.x. Extract into the game folder, load a save, press F8.
+0.5.1 - game 1.0.6, MelonLoader 0.7.x. Extract into the game folder, load a save, press F8.
 
-New: clear away boxes and crates you spawned.
-Fixed: missing spawn buttons; free delivery now free and reliable.
+Checked against game 1.0.6; nothing needed changing.
 ```
 
 ---
@@ -105,7 +103,7 @@ It was written to test other mods, so it leans towards things a developer needs 
 
 [list]
 [*]MelonLoader 0.7.x
-[*]Built against Anime Shop Simulator 1.0.5
+[*]Built against Anime Shop Simulator 1.0.6
 [/list]
 
 [size=4][b]Installation[/b][/size]
@@ -153,6 +151,12 @@ VerboseLogs = false
 [/list]
 
 [size=4][b]Changelog[/b][/size]
+
+[b]0.5.1[/b]
+[list]
+[*]Checked against Anime Shop Simulator 1.0.6. The start-up probe finds every system the menu reaches, and money, the clock, box orders and emptying shelves were all run against a live 1.0.6 save. Nothing needed changing for the update itself.
+[*]Under the hood, the cheat code moved into a folder of its own so other dev tools can share it. The menu behaves exactly as before.
+[/list]
 
 [b]0.5.0[/b]
 [list]
