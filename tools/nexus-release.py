@@ -80,8 +80,19 @@ def read_changelog(mod, version):
     # Nexus shows changelog entries as plain text; Markdown markers would show up literally.
     body = re.sub(r"\*\*(.+?)\*\*", r"\1", body, flags=re.S)
     body = body.replace("`", "")
-    # Rejoin hard-wrapped lines so each paragraph or list item is one line on the page.
-    paragraphs = [" ".join(line.strip() for line in block.splitlines()) for block in re.split(r"\n\s*\n", body)]
+    # Rejoin hard-wrapped lines so each paragraph or list item is one line on the page. A list item
+    # starts a new line even without a blank line before it, which is how the READMEs write lists.
+    paragraphs = []
+    for block in re.split(r"\n\s*\n", body):
+        items, current = [], []
+        for line in block.splitlines():
+            if re.match(r"\s*[-*] ", line) and current:
+                items.append(" ".join(current))
+                current = []
+            current.append(line.strip())
+        if current:
+            items.append(" ".join(current))
+        paragraphs.append("\n".join(items))
     return "\n\n".join(p for p in paragraphs if p)
 
 
