@@ -130,6 +130,18 @@ def get_json(url, key):
     return json.loads(payload)
 
 
+def resolve_v3_ids(game, mod_id, file_id, key):
+    """The upload API speaks its own ids, not the ones in a mod page's URL.
+
+    nexus.json holds the ids a person can read off the site (mods/4, file 20). The v3 API rejects
+    those with "Mod file not found", so they are translated here through the game-scoped lookups
+    the API offers for exactly this.
+    """
+    v3_mod = get_json(f"{API_V3}/games/{game}/mods/{mod_id}", key)["data"]["id"]
+    v3_file = get_json(f"{API_V3}/games/{game}/mod-file-versions/{file_id}", key)["data"]["file"]["id"]
+    return v3_mod, v3_file
+
+
 def upload(zip_file, key):
     size = os.path.getsize(zip_file)
     _, payload = request("POST", f"{API_V3}/uploads/multipart", key,
@@ -201,6 +213,11 @@ def main():
 
     page = get_json(f"{API_V1}/games/{game}/mods/{mod_id}.json", key)
     live = page.get("version")
+    # The page's version lags behind a fresh upload for a while, so it cannot be the only guard
+    # against sending the same release twice: a file already carrying this version counts too.
+    files = get_json(f"{API_V1}/games/{game}/mods/{mod_id}/files.json", key).get("files", [])
+    if any(f.get("version") == version for f in files):
+        live = version
 
     print(f"Mod        {page.get('name')}  (nexusmods.com/{game}/mods/{mod_id})")
     print(f"Version    {live} on Nexus  ->  {version} here")
@@ -219,8 +236,9 @@ def main():
         return
 
     print("\nPublishing...")
+    v3_mod, v3_file = resolve_v3_ids(game, mod_id, file_id, key)
     upload_id = upload(zip_file, key)
-    _, payload = request("POST", f"{API_V3}/mod-files/{file_id}/versions", key, body={
+    _, payload = request("POST", f"{API_V3}/mod-files/{v3_file}/versions", key, body={
         "upload_id": upload_id,
         "name": f"{args.mod} {version}",
         "description": description,
@@ -231,12 +249,15 @@ def main():
     })
     version_id = json.loads(payload)["data"]["version"]["id"]
     print(f"  file version {version_id} created")
-    request("POST", f"{API_V3}/mods/{mod_id}/changelogs", key, body={"version": version, "changelog": changelog})
+    request("POST", f"{API_V3}/mods/{v3_mod}/changelogs", key, body={"version": version, "changelog": changelog})
     print("  changelog added")
     print(f"\nPublished {args.mod} {version}: https://www.nexusmods.com/{game}/mods/{mod_id}?tab=files")
 
 
 if __name__ == "__main__":
+    # Progress and errors must come out in the order they happen. Piped, stdout is block-buffered
+    # while stderr is not, and a failure then prints before the step it failed in.
+    sys.stdout.reconfigure(line_buffering=True)
     try:
         main()
     except ReleaseError as error:

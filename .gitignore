@@ -20,3 +20,5 @@ Directory.Build.local.props
 **/Il2CppAssemblies/
 **/cpp2il_out/
 *.dump
+
+*.env*
