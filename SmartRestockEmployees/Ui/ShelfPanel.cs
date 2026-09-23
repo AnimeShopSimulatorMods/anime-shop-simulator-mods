@@ -391,7 +391,7 @@ namespace SmartRestockEmployees.Ui
                 GUILayout.BeginVertical();
                 GUILayout.Label("Let employees use these slots again", Skin.Body);
                 GUILayout.Label(_shelfProduct > 0
-                        ? $"Stocks the {_bareSlots} forgotten slot(s) here with this shelf's product again."
+                        ? $"Employees fill the {_bareSlots} forgotten slot(s) here with this shelf's product again."
                         : "Stock one of these slots yourself first, so the mod knows what belongs here.",
                     Skin.Hint);
                 GUILayout.EndVertical();
