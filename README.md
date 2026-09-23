@@ -22,10 +22,9 @@ Each mod is a single DLL and works on its own. Install only the ones you want.
 
 ## Dev tools
 
-`GameBridge` and `GameMcp` are dev-only, never shipped to players: `GameBridge` opens a local socket in
-the running game, and `GameMcp` is an MCP server that lets Claude Code call it — read shelves and
-employees, move the player, take screenshots, change the clock, and more, useful for testing the mods
-above against real game state. See [`GameBridge/README.md`](GameBridge/README.md).
+The tool used to test these mods against a running game — a bridge mod plus an MCP server that lets
+Claude Code read shelves and employees, move the player, take screenshots and call into the mods —
+now lives in its own repository: [AnimeShopMCP](https://github.com/1REDfriend/AnimeShopMCP).
 
 ## Installation
 
