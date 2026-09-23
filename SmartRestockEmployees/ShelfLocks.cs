@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using AnimeShopMods.Game;
 using Il2CppProject.Code.Gameplay.Interactions.Shelfs;
 using Il2CppProject.Code.Gameplay.Player.Products;
 using MelonLoader;
@@ -83,6 +84,24 @@ namespace SmartRestockEmployees
             {
                 var productPlace = place.ProductPlace;
                 if (productPlace != null && productPlace.Count == 0) count++;
+            });
+            return count;
+        }
+
+        // How many slots on this shelf are empty, not set aside by this mod, and remember no
+        // product -- the slots employees quietly skip while "fill bare shelves" is off, and the
+        // slots Remember exists to bring back. A slot the player forgot and then released from the
+        // panel lands here too: releasing only removes the lock, it does not restore the memory.
+        public static int BareSlots(ShelfProducts shelf)
+        {
+            int count = 0;
+            ForEachSlot(shelf, place =>
+            {
+                var productPlace = place.ProductPlace;
+                if (productPlace == null || productPlace.Count > 0) return;
+                if (IsLocked(place)) return;
+                if (ShelfMemory.Remembers(place)) return;
+                count++;
             });
             return count;
         }
