@@ -56,7 +56,15 @@ Plain text - Nexus comments are not BBCode-heavy.
 ```
 Hi Drakolyte, thanks for the detailed report and for sticking with it until it made sense.
 
-What you were seeing was real, and it had nothing to do with the muscular destiny manga, pocket dragon manga, keep heart manga, ksusha figure, or kage t-shirt themselves. Those slots had been told, at some point, to sit there and not restock (a "Forget" press, maybe a while back), and there was no way to undo that and nothing on the panel explaining why. So your employees weren't avoiding those products - they were doing exactly what the mod had quietly asked them to do, indefinitely.
+What you were seeing was real, and it had nothing to do with the muscular destiny manga, pocket
+dragon manga, keep heart manga, ksusha figure or kage t-shirt themselves.
+
+Your log was right that nothing was locked. The catch is that Forget does two things at once: it
+sets a slot aside AND it clears the slot's memory of what belongs there. Releasing the lock gives
+the slot back, but not the memory -- so the game then treats it as a shelf that has never held
+anything, and those are only filled when "Employees may fill bare shelves" is on. With that switch
+off, such a slot is skipped forever, and nothing on the panel said so. That is the bug: not the
+locking, but that there was no way back and no explanation.
 
 1.5.0 fixes this. Once you update, for the affected shelves:
 
