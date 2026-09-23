@@ -12,8 +12,13 @@ public static class InputTools
     [McpServerTool(Name = "key_press"), Description("Press and release a key, holding it for holdSeconds (max 30). " +
         "Keys: letters, digits, F1-F12, Space, Enter, Escape, Tab, Shift, Ctrl, Alt, Up/Down/Left/Right...")]
     public static Task<CallToolResult> KeyPress(BridgeClient bridge, string key, float holdSeconds = 0.1f,
-        CancellationToken cancel = default) =>
-        Relay.Run(bridge, "key_press", new { key, holdSeconds }, (int)((holdSeconds + 10) * 1000), cancel);
+        CancellationToken cancel = default)
+    {
+        // The bridge clamps the hold to the same range; clamping here too keeps the reply budget sane
+        // when a nonsensical hold comes in, instead of asking for a negative timeout.
+        holdSeconds = Math.Clamp(holdSeconds, 0.02f, 30f);
+        return Relay.Run(bridge, "key_press", new { key, holdSeconds }, (int)((holdSeconds + 10) * 1000), cancel);
+    }
 
     [McpServerTool(Name = "key_down"), Description("Hold a key down until key_up or key_release_all.")]
     public static Task<CallToolResult> KeyDown(BridgeClient bridge, string key, CancellationToken cancel = default) =>

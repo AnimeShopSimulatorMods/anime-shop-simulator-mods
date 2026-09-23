@@ -52,7 +52,10 @@ namespace GameBridge.Commands
 
         private static object Teleport(JObject args)
         {
-            var player = TestingCheats.LocalPlayer() ?? throw new InvalidOperationException("No local player.");
+            // Unity overloads == so that a destroyed object compares equal to null, and ?? does not use
+            // that overload; every null check on a game object goes through == on purpose.
+            var player = TestingCheats.LocalPlayer();
+            if (player == null) throw new InvalidOperationException("No local player. Load a save first.");
             var destination = Point(args, standOff: args.Value<float?>("distance") ?? 1.5f);
 
             // A CharacterController snaps the player back to where it thinks they are unless it is off
@@ -72,8 +75,8 @@ namespace GameBridge.Commands
         private static object LookAt(JObject args)
         {
             var player = LocalPlayer();
-            var camera = player._cameraController
-                         ?? throw new InvalidOperationException("The player has no camera controller yet.");
+            var camera = player._cameraController;
+            if (camera == null) throw new InvalidOperationException("The player has no camera controller yet.");
             var eye = camera._xTransform != null ? camera._xTransform.position : player.transform.position;
             var target = Point(args, standOff: 0f);
 

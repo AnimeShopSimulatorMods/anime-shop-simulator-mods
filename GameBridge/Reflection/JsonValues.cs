@@ -16,7 +16,11 @@ namespace GameBridge.Reflection
             switch (value)
             {
                 case null: return null;
-                case string _: case bool _: case int _: case long _: case float _: case double _:
+                // NaN and infinity have no JSON spelling; Newtonsoft writes them bare and the reader on
+                // the other end then rejects the whole reply, losing every other field with them.
+                case float f: return float.IsNaN(f) || float.IsInfinity(f) ? null : (object)f;
+                case double d: return double.IsNaN(d) || double.IsInfinity(d) ? null : (object)d;
+                case string _: case bool _: case int _: case long _:
                 case short _: case byte _: case uint _: case ulong _: case decimal _:
                     return value;
                 case Enum e: return e.ToString();
@@ -87,6 +91,10 @@ namespace GameBridge.Reflection
         public static object Cast(object value, Type target)
         {
             if (value == null || target.IsInstanceOfType(value)) return value;
+            // A wrapper is built by handing the pointer to the target type's constructor, which an
+            // abstract type such as Component does not have.
+            if (target.IsAbstract || target.IsInterface)
+                throw new ArgumentException($"A {value.GetType().Name} is not a {target.Name}.");
             if (value is Il2CppObjectBase native && typeof(Il2CppObjectBase).IsAssignableFrom(target))
                 return Activator.CreateInstance(target, native.Pointer);
             throw new ArgumentException($"A {value.GetType().Name} cannot be used as {target.Name}.");
@@ -119,6 +127,6 @@ namespace GameBridge.Reflection
             }
         }
 
-        private static float Round(float f) => (float)Math.Round(f, 3);
+        private static float Round(float f) => float.IsNaN(f) || float.IsInfinity(f) ? 0f : (float)Math.Round(f, 3);
     }
 }
