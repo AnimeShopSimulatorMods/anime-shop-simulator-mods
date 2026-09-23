@@ -12,7 +12,15 @@ $built = Join-Path $here 'Server\bin\Release\net10.0'
 $live = Join-Path $here 'Server\bin\live'
 
 # Every message on stdout belongs to the MCP protocol, so progress and problems go to stderr.
-if (Test-Path (Join-Path $built 'GameMcp.dll')) {
+# Only when the normal build is the newer one: a build sent straight into the live folder (the way to
+# refresh it while a session still holds bin/Release) must not be overwritten by a stale bin/Release.
+$builtDll = Join-Path $built 'GameMcp.dll'
+$liveDll = Join-Path $live 'GameMcp.dll'
+$builtIsNewer = (Test-Path $builtDll) -and
+    (-not (Test-Path $liveDll) -or
+     (Get-Item $builtDll).LastWriteTimeUtc -gt (Get-Item $liveDll).LastWriteTimeUtc)
+
+if ($builtIsNewer) {
     try {
         New-Item -ItemType Directory -Force -Path $live | Out-Null
         Copy-Item -Path (Join-Path $built '*') -Destination $live -Recurse -Force
